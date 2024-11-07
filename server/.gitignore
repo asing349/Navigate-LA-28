@@ -1,0 +1,15 @@
+# Ignore Python cache files
+__pycache__/
+
+# Add other files or directories to ignore as needed
+*.pyc
+*.pyo
+*.pyd
+
+# Environment files (if using virtual environments in the server directory)
+.env
+.env.server
+
+# Ignore logs, temp files, or other files
+*.log
+

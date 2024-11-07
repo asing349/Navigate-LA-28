@@ -1,0 +1,55 @@
+services:
+  client:
+    container_name: navigate_la_frontend
+    image: node:18
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+    command: ["npm", "start"]
+    depends_on:
+      - server
+    networks:
+      - navigate_la_28
+
+  server:
+    container_name: navigate_la_backend
+    build: ./server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/app
+    networks:
+      - navigate_la_28
+
+  hadoop:
+    container_name: hadoop
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    environment:
+      - CLUSTER_NAME=test
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    networks:
+      - navigate_la_28
+
+  spark:
+    container_name: spark
+    image: bitnami/spark:3.3.0
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./hadoop:/hadoop
+    networks:
+      - navigate_la_28
+
+volumes:
+  hadoop_namenode:
+
+networks:
+  navigate_la_28:
