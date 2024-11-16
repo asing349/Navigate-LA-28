@@ -4,14 +4,20 @@ services:
     image: node:18
     working_dir: /app
     ports:
-      - "3000:3000"
+      - "3030:3000"
     volumes:
       - ./client:/app
-    command: bash -c "npm install && npm start"
+    command: >
+      bash -c "npm install &&
+               npm install --save react-app-rewired crypto-browserify stream-browserify os-browserify path-browserify &&
+               npm run start"
     depends_on:
       - server
     networks:
       - navigate_la_28
+    environment:
+      - WATCHPACK_POLLING=true
+      - WDS_SOCKET_PORT=3030
 
   server:
     container_name: navigate_la_backend
