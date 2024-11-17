@@ -134,13 +134,13 @@ Make sure the following software is installed on your machine:
    ```
 
    - This will set up the following services:
-     - **Frontend**: Runs the React app on `http://localhost:3000`.
+     - **Frontend**: Runs the React app on `http://localhost:3030`.
      - **Backend**: Runs the FastAPI app on `http://localhost:8000`.
      - **Hadoop and Spark**: Set up for data management.
 
 2. **Verify Services**:
 
-   - Access the **frontend** at `http://localhost:3000`.
+   - Access the **frontend** at `http://localhost:3030`.
    - Access the **backend API** at `http://localhost:8000`.
    - For **Hadoop** and **Spark**, use the Docker container access commands if needed.
 
