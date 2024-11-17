@@ -9,7 +9,6 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
     "crypto-browserify": "^3.12.1",
-    "dotenv": "^16.4.5",
     "leaflet": "^1.9.4",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
