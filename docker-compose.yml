@@ -39,6 +39,7 @@ services:
       - "9000:9000"
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
+      - ./hadoop/conf:/opt/hadoop-3.2.1/etc/hadoop
     networks:
       - navigate_la_28
 
@@ -50,7 +51,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./hadoop:/hadoop
+      - ./spark/conf:/opt/bitnami/spark/conf
     networks:
       - navigate_la_28
 
