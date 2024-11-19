@@ -55,8 +55,23 @@ services:
     networks:
       - navigate_la_28
 
+  postgres:
+    container_name: navigate_la_postgres
+    image: postgres:13
+    environment:
+      POSTGRES_USER: la28_user
+      POSTGRES_PASSWORD: bigdata_la28
+      POSTGRES_DB: navigate_la28_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - navigate_la_28
+
 volumes:
   hadoop_namenode:
+  postgres_data:
 
 networks:
   navigate_la_28:
