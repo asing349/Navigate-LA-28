@@ -25,11 +25,14 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./server:/app  # This maps your local server directory to /app in the container
+      - ./server:/app
     environment:
-      - PYTHONPATH=/app  # This sets PYTHONPATH to the root directory where main.py and server directory are located
+      - PYTHONPATH=/app
     networks:
       - navigate_la_28
+    depends_on:
+      - postgres
+      - postgres_test
 
   hadoop:
     container_name: hadoop
@@ -71,9 +74,24 @@ services:
     networks:
       - navigate_la_28
 
+  postgres_test:
+    container_name: navigate_la_postgres_test
+    image: postgres:13
+    environment:
+      POSTGRES_USER: la28_user
+      POSTGRES_PASSWORD: bigdata_la28
+      POSTGRES_DB: navigate_la28_test_db
+    ports:
+      - "5434:5432"  # Use a different port to avoid conflicts with the production database
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - navigate_la_28
+
 volumes:
   hadoop_namenode:
   postgres_data:
+  postgres_test_data:
 
 networks:
   navigate_la_28:
