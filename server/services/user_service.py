@@ -1,12 +1,13 @@
 # server/services/user_service.py
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 import bcrypt
 from typing import Optional
 from models.user import User as UserModel
 from schemas.user import UserCreate
 
 
-def create_user(db: Session, user: UserCreate) -> UserModel:
+async def create_user(db: AsyncSession, user: UserCreate) -> UserModel:
     hashed_password = bcrypt.hashpw(user.password.encode("utf-8"), bcrypt.gensalt())
     db_user = UserModel(
         username=user.username,
@@ -15,28 +16,31 @@ def create_user(db: Session, user: UserCreate) -> UserModel:
         country=user.country,
     )
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     return db_user
 
 
-def get_user(db: Session, user_id: int) -> UserModel:
-    return db.query(UserModel).filter(UserModel.id == user_id).first()
+async def get_user(db: AsyncSession, user_id: int) -> UserModel:
+    result = await db.execute(select(UserModel).filter(UserModel.id == user_id))
+    return result.scalars().first()
 
 
-def delete_user(db: Session, user_id: int):
-    db_user = db.query(UserModel).filter(UserModel.id == user_id).first()
+async def delete_user(db: AsyncSession, user_id: int) -> bool:
+    result = await db.execute(select(UserModel).filter(UserModel.id == user_id))
+    db_user = result.scalars().first()
     if db_user:
-        db.delete(db_user)
-        db.commit()
+        await db.delete(db_user)
+        await db.commit()
         return True
     return False
 
 
-def update_user(
-    db: Session, user_id: int, user_update: UserCreate
+async def update_user(
+    db: AsyncSession, user_id: int, user_update: UserCreate
 ) -> Optional[UserModel]:
-    db_user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    result = await db.execute(select(UserModel).filter(UserModel.id == user_id))
+    db_user = result.scalars().first()
     if db_user:
         db_user.username = user_update.username
         db_user.dob = user_update.dob
@@ -44,7 +48,7 @@ def update_user(
         db_user.password = bcrypt.hashpw(
             user_update.password.encode("utf-8"), bcrypt.gensalt()
         ).decode("utf-8")
-        db.commit()
-        db.refresh(db_user)
+        await db.commit()
+        await db.refresh(db_user)
         return db_user
     return None

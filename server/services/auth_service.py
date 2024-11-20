@@ -2,7 +2,8 @@
 from datetime import datetime, timedelta
 from jose import jwt
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from models.user import User as UserModel
 from schemas.user import UserAuth
@@ -20,8 +21,9 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-def authenticate_user(db: Session, username: str, password: str):
-    user = db.query(UserModel).filter(UserModel.username == username).first()
+async def authenticate_user(db: AsyncSession, username: str, password: str):
+    result = await db.execute(select(UserModel).filter(UserModel.username == username))
+    user = result.scalars().first()
     if not user:
         return False
     if not verify_password(password, user.password):
