@@ -1,7 +1,7 @@
 # server/services/__init__.py
 
 # Importing all necessary functions from the user services
-from services.user_service import (
+from services.user_services import (
     create_user,
     get_user,
     delete_user,
