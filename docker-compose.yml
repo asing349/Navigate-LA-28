@@ -63,7 +63,7 @@ services:
       POSTGRES_PASSWORD: bigdata_la28
       POSTGRES_DB: navigate_la28_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
