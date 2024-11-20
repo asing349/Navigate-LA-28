@@ -1,20 +1,32 @@
+# server/main.py
 from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
+from routes import api_router  # Import the API router
 
-# Import the api_router from routes module
-from routes import api_router
-
+# Load environment variables
 load_dotenv()
 
-database_url = os.getenv("DATABASE_URL")
-secret_key = os.getenv("SECRET_KEY")
+# Fetch environment variables with defaults
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@localhost/dbname")
+SECRET_KEY = os.getenv("SECRET_KEY", "defaultsecretkey")
 
-app = FastAPI()
+# Initialize the FastAPI app
+app = FastAPI(
+    title="Your API Title",
+    description="Description of your API functionality.",
+    version="1.0.0",
+    docs_url="/docs",  # URL for Swagger UI
+    redoc_url="/redoc",  # URL for ReDoc
+    openapi_url="/openapi.json"  # URL for OpenAPI schema
+)
 
-# Include the API router that registers all routes
+# Include the API router
 app.include_router(api_router, prefix="/api", tags=["API"])
 
 @app.get("/")
-def read_root():
-    return {"Hello": "World"}
+async def read_root():
+    """
+    Root endpoint to verify the server is running.
+    """
+    return {"message": "Welcome to the API!"}

@@ -1,3 +1,4 @@
+# server/routes/__init__.py
 from fastapi import APIRouter
 
 # Import routers from individual route files

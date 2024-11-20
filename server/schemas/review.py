@@ -1,28 +1,37 @@
 # server/schemas/review.py
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 from schemas.base import BaseSchema
 
 class ReviewBase(BaseSchema):
-    rating: int
-    comment: Optional[str] = None
+    """
+    Shared fields between Review schemas.
+    """
+    rating: int = Field(..., ge=1, le=5, description="Rating between 1 and 5")
+    comment: Optional[str] = Field(None, description="Optional comment about the place")
 
-# Inherits ReviewBase for creating a new review, requires place_id and user_id
 class ReviewCreate(ReviewBase):
-    place_id: int
-    user_id: int
+    """
+    Fields required for creating a new review.
+    """
+    place_id: int = Field(..., description="ID of the place being reviewed")
+    user_id: int = Field(..., description="ID of the user submitting the review")
 
-# Used for updates, allows optional updates to rating and comment
 class ReviewUpdate(BaseModel):
-    rating: Optional[int]
-    comment: Optional[str]
+    """
+    Fields allowed for updating an existing review.
+    """
+    rating: Optional[int] = Field(None, ge=1, le=5, description="Updated rating between 1 and 5")
+    comment: Optional[str] = Field(None, description="Updated comment about the place")
 
-# Full Review schema used for reading data, includes ID, and integrates ORM mode
 class Review(ReviewBase):
-    id: int
-    user_id: int
-    place_id: int
+    """
+    Response schema for Review, includes all database-specific fields.
+    """
+    id: int = Field(..., description="Unique identifier for the review")
+    user_id: int = Field(..., description="ID of the user who submitted the review")
+    place_id: int = Field(..., description="ID of the place being reviewed")
 
     class Config:
         orm_mode = True
