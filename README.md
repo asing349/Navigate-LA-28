@@ -6,9 +6,6 @@ A Big Data Management project using geospatial data to help tourists navigate LA
 - [Navigate-LA-28 Project](#navigate-la-28-project)
   - [Table of Contents](#table-of-contents)
   - [Project Structure](#project-structure)
-  - [Installation and Setup](#installation-and-setup)
-    - [Prerequisites](#prerequisites)
-    - [Project Setup](#project-setup)
     - [Environment Variables](#environment-variables)
     - [Running the Project](#running-the-project)
     - [Development Workflow](#development-workflow)
@@ -18,63 +15,73 @@ A Big Data Management project using geospatial data to help tourists navigate LA
 
 ```plaintext
 Navigate-LA-28/
-├── client/                   # React frontend
-│   ├── node_modules/         # Node.js packages
-│   ├── public/               # Public assets for the frontend
+├── client/                             # React frontend
+│   ├── node_modules/                   # Node.js packages
+│   ├── public/                         # Public assets for the frontend
 │   │   ├── favicon.ico
 │   │   ├── index.html
 │   │   ├── manifest.json
 │   │   └── robots.txt
-│   ├── src/                  # React source code
-│   │   ├── components/       # Reusable React components
+│   ├── src/                            # React source code
+│   │   ├── assets/
+│   │   ├── components/
 │   │   │   └── TestProfile.jsx
-│   │   ├── slices/           # Redux slices for state management
+│   │   ├── constants/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   ├── slices/
 │   │   │   ├── index.js
 │   │   │   ├── testSlice.js
 │   │   │   └── userSlice.js
-│   │   ├── hooks/            # Custom React hooks
-│   │   ├── utils/            # Utility functions
-│   │   ├── assets/           # Static assets (e.g., images, icons)
-│   │   ├── constants/        # Constant values used across the app
-│   │   ├── services/         # API call functions
-│   │   ├── styles/           # Styling files
-│   │   ├── App.css           # Global CSS styles
-│   │   ├── App.js            # Main React component
-│   │   ├── index.css         # Index CSS file
-│   │   ├── index.js          # Entry point for React
-│   │   └── store.js          # Redux store configuration
-│   ├── .env                  # Environment variables
-│   ├── .env.client           # Client-specific environment variables
-│   ├── .env.example          # Example environment variables for the frontend
-│   ├── .gitignore            # Git ignore file
-│   ├── package-lock.json     # Lock file for npm dependencies
-│   ├── package.json          # Frontend dependencies
-│   └── README.md             # Documentation
+│   │   ├── styles/
+│   │   ├── utils/
+│   │   ├── App.css
+│   │   ├── App.js
+│   │   ├── index.css
+│   │   ├── index.js
+│   │   └── store.js
+│   ├── .gitignore
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── README.md
+│   └── .env (example)
 │
-├── hadoop/                   # Directory for Hadoop configurations or files
+├── hadoop/
+│   └── conf/
+│       ├── core-site.xml
+│       ├── hdfs-site.xml
+│       └── log4j.properties
 │
-├── server/                   # FastAPI backend
-│   ├── __pycache__/          # Python bytecode cache (ignored in .gitignore)
-│   ├── config/               # Configuration files (e.g., settings)
-│   ├── routes/               # API routes/endpoints
-│   ├── models/               # Database models
-│   ├── services/             # Business logic and helper functions
-│   ├── schemas/              # Pydantic schemas for data validation
-│   ├── tests/                # Unit and integration tests
-│   ├── utils/                # Utility functions
-│   ├── main.py               # Main FastAPI application entry point
-│   ├── Dockerfile            # Dockerfile for backend
-│   ├── .env                  # Environment variables for backend
-│   ├── .env.server           # Server-specific environment variables
-│   ├── .env.example          # Example environment variables for the backend
-│   ├── .gitignore            # Git ignore file for backend
-│   ├── package-lock.json     # Lock file for backend dependencies
-│   ├── package.json          # Backend dependencies
-│   └── README.md             # Backend documentation
+├── navigate_la28/
+│   └── server/
+│       ├── config/
+│       ├── models/
+│       ├── routes/
+│       ├── schemas/
+│       ├── services/
+│       ├── tests/
+│       ├── utils/
+│       ├── .env
+│       ├── .env.example
+│       ├── .gitignore
+│       ├── Dockerfile
+│       ├── main.py
+│       ├── package-lock.json
+│       ├── package.json
+│       ├── README.md
+│       └── requirements.txt
 │
-├── .gitignore                # Root Git ignore file
-├── docker-compose.yml        # Docker Compose configuration
-└── README.md                 # Root project documentation
+├── spark/
+│   └── conf/
+│       ├── spark-defaults.conf
+│       └── spark-env.sh
+│
+├── .gitignore
+├── docker-compose.yml
+└── README.md
+```
+
+This structure will give readers of your `README.md` a clear, hierarchical view of how your project is organized. Make sure to update the file paths and names to accurately reflect your actual project setup if they differ from what's described above. Adjust the `.env` mention to include all `.env` files based on their respective directories and sensitivities.
 ```
 
 ## Installation and Setup
