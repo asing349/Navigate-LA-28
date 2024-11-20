@@ -4,10 +4,15 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 
 from schemas.user import UserAuth
-from onfig.database import get_db
-from services.auth_service import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from config.database import get_db
+from services.auth_service import (
+    authenticate_user,
+    create_access_token,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+)
 
 router = APIRouter()
+
 
 @router.post("/token", response_model=UserAuth)
 def login_for_access_token(form_data: UserAuth, db: Session = Depends(get_db)):

@@ -7,4 +7,5 @@
 <property><name>fs.defaultFS</name><value>hdfs://8f6c739e33b8:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://8f6c739e33b8:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://49958c659bff:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://70f3e1739164:8020</value></property>
 </configuration>

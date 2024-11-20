@@ -14,7 +14,10 @@ secret_key = os.getenv("SECRET_KEY")
 app = FastAPI()
 
 # Include the API router that registers all routes
-app.include_router(api_router, prefix="/api")
+app.include_router(user_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+app.include_router(review_router, prefix="/api")
+
 
 @app.get("/")
 def read_root():
