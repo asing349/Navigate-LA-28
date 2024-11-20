@@ -6,6 +6,9 @@ A Big Data Management project using geospatial data to help tourists navigate LA
 - [Navigate-LA-28 Project](#navigate-la-28-project)
   - [Table of Contents](#table-of-contents)
   - [Project Structure](#project-structure)
+  - [Installation and Setup](#installation-and-setup)
+    - [Prerequisites](#prerequisites)
+    - [Project Setup](#project-setup)
     - [Environment Variables](#environment-variables)
     - [Running the Project](#running-the-project)
     - [Development Workflow](#development-workflow)
@@ -79,9 +82,6 @@ Navigate-LA-28/
 ├── .gitignore
 ├── docker-compose.yml
 └── README.md
-```
-
-This structure will give readers of your `README.md` a clear, hierarchical view of how your project is organized. Make sure to update the file paths and names to accurately reflect your actual project setup if they differ from what's described above. Adjust the `.env` mention to include all `.env` files based on their respective directories and sensitivities.
 ```
 
 ## Installation and Setup
