@@ -1,7 +1,8 @@
 # server/schemas/review.py
 from pydantic import BaseModel
 from typing import Optional
-from .base import BaseSchema
+
+from schemas.base import BaseSchema
 
 class ReviewBase(BaseSchema):
     rating: int

@@ -4,8 +4,8 @@ from jose import jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from ..models.user import User as UserModel
-from ..schemas.user import UserAuth
+from models.user import User as UserModel
+from schemas.user import UserAuth
 
 # Constants
 SECRET_KEY = "YOUR_SECRET_KEY"  # Ideally fetched from environment variables

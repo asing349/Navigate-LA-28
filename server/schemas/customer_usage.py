@@ -1,6 +1,7 @@
 # server/schemas/customer_usage.py
-from .base import BaseSchema
 from datetime import datetime
+
+from schemas.base import BaseSchema
 
 class CustomerUsageBase(BaseSchema):
     request_made: str

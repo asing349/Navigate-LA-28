@@ -1,11 +1,10 @@
 # server/routes/review_routes.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ..schemas.review import ReviewCreate, Review, ReviewUpdate
-from ..services.review_service import (
-    create_review, get_review, update_review, delete_review
-)
-from ..config.database import get_db
+
+from schemas.review import ReviewCreate, Review, ReviewUpdate
+from services.review_service import create_review, get_review, update_review, delete_review
+from config.database import get_db
 
 router = APIRouter()
 

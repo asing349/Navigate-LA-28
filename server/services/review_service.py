@@ -1,7 +1,8 @@
 # server/services/review_service.py
 from sqlalchemy.orm import Session
-from ..models.review import Review as ReviewModel
-from ..schemas.review import ReviewCreate, ReviewUpdate
+
+from models.review import Review as ReviewModel
+from schemas.review import ReviewCreate, ReviewUpdate
 
 def create_review(db: Session, review: ReviewCreate) -> ReviewModel:
     db_review = ReviewModel(**review.dict())

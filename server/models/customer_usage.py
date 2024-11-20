@@ -1,8 +1,9 @@
 # server/models/customer_usage.py
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from .base import Base
 import datetime
+
+from models.base import Base
 
 class CustomerUsage(Base):
     __tablename__ = "customer_usage"

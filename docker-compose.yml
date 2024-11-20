@@ -25,7 +25,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./server:/app
+      - ./server:/app  # This maps your local server directory to /app in the container
+    environment:
+      - PYTHONPATH=/app  # This sets PYTHONPATH to the root directory where main.py and server directory are located
     networks:
       - navigate_la_28
 

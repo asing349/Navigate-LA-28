@@ -1,8 +1,9 @@
 # server/schemas/user.py
-from .base import BaseSchema
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
+
+from schemas.base import BaseSchema
 
 # Forward declarations for Review and CustomerUsage to be used in type hints
 from typing import TYPE_CHECKING
