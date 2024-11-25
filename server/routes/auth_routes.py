@@ -1,7 +1,6 @@
 # server/routes/auth_routes.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 from datetime import timedelta
 from fastapi.security import OAuth2PasswordRequestForm
 

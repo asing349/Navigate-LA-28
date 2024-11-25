@@ -8,6 +8,7 @@ from config.database import get_db
 
 router = APIRouter()
 
+
 @router.post("/customer-usage/", response_model=CustomerUsage, status_code=201)
 async def create_customer_usage_route(customer_usage: CustomerUsageCreate, user_id: int, db: AsyncSession = Depends(get_db)):
     try:
@@ -20,6 +21,7 @@ async def create_customer_usage_route(customer_usage: CustomerUsageCreate, user_
             detail=str(e)
         )
 
+
 @router.get("/customer-usage/{customer_usage_id}", response_model=CustomerUsage)
 async def read_customer_usage_route(customer_usage_id: int, db: AsyncSession = Depends(get_db)):
     try:
@@ -27,7 +29,8 @@ async def read_customer_usage_route(customer_usage_id: int, db: AsyncSession = D
         customer_usage = await get_customer_usage(db, customer_usage_id)
         if not customer_usage:
             # If the data is not found, return a 404 error
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer usage not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Customer usage not found")
         return customer_usage
     except HTTPException as e:
         # Rethrow the HTTPException to be handled by FastAPI

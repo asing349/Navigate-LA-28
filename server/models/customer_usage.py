@@ -5,6 +5,7 @@ from datetime import datetime
 
 from models.base import Base
 
+
 class CustomerUsage(Base):
     __tablename__ = "customer_usage"
 

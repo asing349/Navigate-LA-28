@@ -1,6 +1,7 @@
 # server/middleware/cors_config.py
 from fastapi.middleware.cors import CORSMiddleware
 
+
 def add_cors_middleware(app):
     """
     Add CORS middleware to the FastAPI application.

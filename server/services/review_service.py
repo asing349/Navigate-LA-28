@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from models.review import Review as ReviewModel
 from schemas.review import ReviewCreate, ReviewUpdate
 
+
 async def create_review(db: AsyncSession, review: ReviewCreate) -> ReviewModel:
     try:
         # Create a new review record
@@ -19,6 +20,7 @@ async def create_review(db: AsyncSession, review: ReviewCreate) -> ReviewModel:
         await db.rollback()
         raise Exception(f"Error creating review: {str(e)}")
 
+
 async def get_review(db: AsyncSession, review_id: int) -> ReviewModel:
     try:
         # Retrieve review by ID
@@ -27,6 +29,7 @@ async def get_review(db: AsyncSession, review_id: int) -> ReviewModel:
     except SQLAlchemyError as e:
         # Handle any SQLAlchemy-specific errors
         raise Exception(f"Error fetching review: {str(e)}")
+
 
 async def update_review(db: AsyncSession, review_id: int, review: ReviewUpdate) -> ReviewModel:
     try:
@@ -46,6 +49,7 @@ async def update_review(db: AsyncSession, review_id: int, review: ReviewUpdate) 
         # Rollback in case of an error
         await db.rollback()
         raise Exception(f"Error updating review: {str(e)}")
+
 
 async def delete_review(db: AsyncSession, review_id: int) -> bool:
     try:

@@ -6,10 +6,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from models.customer_usage import CustomerUsage as CustomerUsageModel
 from schemas.customer_usage import CustomerUsageCreate
 
+
 async def create_customer_usage(db: AsyncSession, customer_usage: CustomerUsageCreate, user_id: int) -> CustomerUsageModel:
     try:
         # Create a new customer usage record
-        db_customer_usage = CustomerUsageModel(**customer_usage.dict(), user_id=user_id)
+        db_customer_usage = CustomerUsageModel(
+            **customer_usage.dict(), user_id=user_id)
         db.add(db_customer_usage)
         await db.commit()  # Commit changes to the database
         await db.refresh(db_customer_usage)  # Refresh to get the updated state
@@ -18,6 +20,7 @@ async def create_customer_usage(db: AsyncSession, customer_usage: CustomerUsageC
         # Rollback in case of an error
         await db.rollback()
         raise Exception(f"Error creating customer usage: {str(e)}")
+
 
 async def get_customer_usage(db: AsyncSession, customer_usage_id: int) -> CustomerUsageModel:
     try:

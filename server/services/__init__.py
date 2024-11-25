@@ -18,7 +18,7 @@ from services.review_service import (
 
 # Importing all necessary functions from the auth services
 from services.auth_service import (
-    authenticate_user, 
+    authenticate_user,
     create_access_token,
     get_password_hash,
     verify_password
