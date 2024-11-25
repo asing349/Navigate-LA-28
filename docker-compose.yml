@@ -33,6 +33,11 @@ services:
     depends_on:
       - postgres
       - postgres_test
+    command: >
+      bash -c "
+        python models/init_db.py &&
+        uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      "
 
   hadoop:
     container_name: hadoop

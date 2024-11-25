@@ -3,6 +3,9 @@ from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
 
 from models.base import Base
+from models.place import Place
+from models.user import User
+
 
 class Review(Base):
     __tablename__ = "reviews"
@@ -11,12 +14,16 @@ class Review(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     # Foreign keys linking to users and places tables
-    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
-    place_id = Column(Integer, ForeignKey('places.id', ondelete="CASCADE"), nullable=False)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    place_id = Column(
+        Integer, ForeignKey("places.id", ondelete="CASCADE"), nullable=False
+    )
 
     # Integer field for ratings with a constraint for valid ranges
     rating = Column(Integer, nullable=False)
-    
+
     # String field for comments
     comment = Column(String, nullable=True)
 

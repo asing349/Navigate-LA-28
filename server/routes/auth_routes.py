@@ -12,11 +12,15 @@ from services.auth_service import (
     create_access_token,
     ACCESS_TOKEN_EXPIRE_MINUTES,
 )
+from schemas.token import Token
 
 router = APIRouter()
 
-@router.post("/token", response_model=UserAuth)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
+):
     try:
         # Attempt to authenticate the user with provided credentials
         user = await authenticate_user(db, form_data.username, form_data.password)
