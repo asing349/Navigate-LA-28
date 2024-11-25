@@ -2,6 +2,8 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
+
+from middleware.cors_config import add_cors_middleware  # Import cors setup
 from routes import api_router  # Import the API router
 
 # Load environment variables
@@ -20,6 +22,9 @@ app = FastAPI(
     redoc_url="/redoc",  # URL for ReDoc
     openapi_url="/openapi.json"  # URL for OpenAPI schema
 )
+
+# Add middlewares
+add_cors_middleware(app)
 
 # Include the API router
 app.include_router(api_router, prefix="/api", tags=["API"])
