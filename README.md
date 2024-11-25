@@ -55,8 +55,7 @@ Navigate-LA-28/
 │       ├── hdfs-site.xml
 │       └── log4j.properties
 │
-├── navigate_la28/
-│   └── server/
+├── server/
 │       ├── config/
 │       ├── models/
 │       ├── routes/
