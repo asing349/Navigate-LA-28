@@ -34,4 +34,5 @@
 <property><name>fs.defaultFS</name><value>hdfs://12d26f847dc8:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://12d26f847dc8:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://12d26f847dc8:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://12d26f847dc8:8020</value></property>
 </configuration>
