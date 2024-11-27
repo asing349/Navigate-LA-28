@@ -2,6 +2,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import selectinload
 import bcrypt
 from typing import Optional
 
@@ -18,11 +19,20 @@ async def create_user(db: AsyncSession, user: UserCreate) -> UserModel:
             password=hashed_password.decode("utf-8"),
             dob=user.dob,
             country=user.country,
+            reviews=[],  # Initialize empty relationships
+            usages=[],
         )
         db.add(db_user)
         await db.commit()  # Commit the transaction
-        await db.refresh(db_user)  # Refresh to get the updated state
-        return db_user
+
+        # Fetch the complete user with relationships after creation
+        stmt = (
+            select(UserModel)
+            .filter(UserModel.id == db_user.id)
+            .options(selectinload(UserModel.reviews), selectinload(UserModel.usages))
+        )
+        result = await db.execute(stmt)
+        return result.scalars().first()
     except SQLAlchemyError as e:
         # Rollback in case of an error
         await db.rollback()
