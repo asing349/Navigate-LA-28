@@ -1,20 +1,22 @@
 /* src/App.css */
 
 .app {
-  font-family: "Roboto", Arial, sans-serif;
-  height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
   background-color: #f8f9fa;
+  font-family: "Roboto", Arial, sans-serif;
 }
 
 .main {
   flex: 1;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
 }
 
 .location-info {
   font-size: 14px;
   color: #5f6368;
-  margin: 10px;
+  margin: 12px 0;
 }

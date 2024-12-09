@@ -10,6 +10,8 @@ import "./App.css";
 
 const App = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState("query1");
   const { selectedLocation } = useSelector((state) => state.location);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -24,12 +26,20 @@ const App = () => {
 
   return (
     <div className="app">
+      {/* Header Component */}
       <Header
         username={user?.username}
         onLoginToggle={() => setIsLoginOpen(!isLoginOpen)}
       />
+
+      {/* Main Content */}
       <div className="main">
-        <SearchBar />
+        <SearchBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          searchType={searchType}
+          setSearchType={setSearchType}
+        />
         <MapContainerComponent onLocationSelect={handleLocationSelect} />
         {selectedLocation && (
           <div className="location-info">
@@ -38,6 +48,8 @@ const App = () => {
           </div>
         )}
       </div>
+
+      {/* Login Modal */}
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}

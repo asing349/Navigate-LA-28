@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import "../styles/LoginModal.css";
+import "../styles/LoginModal.css"; // Importing the CSS file
 import { loginUser, registerUser } from "../services/authService";
 
 const LoginModal = ({ isOpen, onClose, onSuccess }) => {
@@ -98,12 +98,17 @@ const LoginModal = ({ isOpen, onClose, onSuccess }) => {
           </button>
         </form>
         <div>
-          <button onClick={() => setIsLoginMode(!isLoginMode)}>
+          <button
+            onClick={() => setIsLoginMode(!isLoginMode)}
+            className="switch-mode-button"
+          >
             {isLoginMode
               ? "Need an account? Create one"
               : "Already have an account? Sign in"}
           </button>
-          <button onClick={onClose}>Close</button>
+          <button onClick={onClose} className="close-button">
+            Close
+          </button>
         </div>
       </div>
     </div>
