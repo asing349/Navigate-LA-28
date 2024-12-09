@@ -13,4 +13,5 @@ api_router = APIRouter()
 api_router.include_router(user_router, prefix="/users", tags=["Users"])
 api_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(review_router, prefix="/reviews", tags=["Reviews"])
-api_router.include_router(customer_usage_router, prefix="/customer-usage", tags=["Customer Usage"])
+api_router.include_router(customer_usage_router,
+                          prefix="/customer-usage", tags=["Customer Usage"])

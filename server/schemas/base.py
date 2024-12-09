@@ -1,6 +1,7 @@
 # server/schemas/base.py
 from pydantic import BaseModel
 
+
 class BaseSchema(BaseModel):
     """
     Base schema to be inherited by all other Pydantic schemas.

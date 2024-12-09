@@ -2,10 +2,15 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
+import logging
 
 from middleware.cors_config import add_cors_middleware  # Import cors setup
 from routes import api_router  # Import the API router
 from fastapi.middleware.cors import CORSMiddleware
+
+# Configure logging for SQLAlchemy
+logging.basicConfig()
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 # Load environment variables
 load_dotenv()
@@ -30,12 +35,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # More permissive for development
-    allow_credentials=False,  # Changed to False since we're using allow_origins=["*"]
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Add middlewares
+# Add additional CORS middleware
 add_cors_middleware(app)
 
 # Include the API router

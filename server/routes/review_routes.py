@@ -8,6 +8,7 @@ from config.database import get_db
 
 router = APIRouter()
 
+
 @router.post("/reviews/", response_model=Review, status_code=201)
 async def create_review_route(review: ReviewCreate, db: AsyncSession = Depends(get_db)):
     try:
@@ -20,6 +21,7 @@ async def create_review_route(review: ReviewCreate, db: AsyncSession = Depends(g
             detail=str(e)
         )
 
+
 @router.get("/reviews/{review_id}", response_model=Review)
 async def read_review_route(review_id: int, db: AsyncSession = Depends(get_db)):
     try:
@@ -27,7 +29,8 @@ async def read_review_route(review_id: int, db: AsyncSession = Depends(get_db)):
         review = await get_review(db, review_id)
         if not review:
             # If the review is not found, raise a 404 error
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
         return review
     except HTTPException as e:
         # Rethrow the HTTPException to be handled by FastAPI
@@ -39,6 +42,7 @@ async def read_review_route(review_id: int, db: AsyncSession = Depends(get_db)):
             detail=str(e)
         )
 
+
 @router.put("/reviews/{review_id}", response_model=Review)
 async def update_review_route(review_id: int, review: ReviewUpdate, db: AsyncSession = Depends(get_db)):
     try:
@@ -46,7 +50,8 @@ async def update_review_route(review_id: int, review: ReviewUpdate, db: AsyncSes
         updated_review = await update_review(db, review_id, review)
         if not updated_review:
             # If no review was updated, raise a 404 error
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
         return updated_review
     except HTTPException as e:
         # Rethrow the HTTPException
@@ -58,13 +63,15 @@ async def update_review_route(review_id: int, review: ReviewUpdate, db: AsyncSes
             detail=str(e)
         )
 
+
 @router.delete("/reviews/{review_id}", status_code=204)
 async def delete_review_route(review_id: int, db: AsyncSession = Depends(get_db)):
     try:
         # Attempt to delete the review
         if not await delete_review(db, review_id):
             # If the deletion is unsuccessful (e.g., review not found), raise a 404 error
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
     except HTTPException as e:
         # Rethrow the HTTPException
         raise e
