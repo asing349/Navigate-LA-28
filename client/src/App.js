@@ -1,8 +1,14 @@
+// src/App.js
 import React, { useState } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import { useSelector, useDispatch } from "react-redux";
+import { setLocation } from "./slices/locationSlice";
+import Header from "./components/Header";
+import MapContainerComponent from "./components/MapContainerComponent";
+import SearchBar from "./components/SearchBar";
+import LoginModal from "./components/LoginModal";
+import "./App.css";
 
+<<<<<<< HEAD
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -306,18 +312,22 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState("nearest_places");
   const [selectedLocation, setSelectedLocation] = useState(null);
+=======
+const App = () => {
+>>>>>>> 5ac6c53c86b5d3bc0cbc9153afe0c09c45438412
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [username, setUsername] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState("query1");
+  const { selectedLocation } = useSelector((state) => state.location);
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
 
   const handleLocationSelect = (coords) => {
-    setSelectedLocation(coords);
-    const [lat, lng] = coords;
-    setSearchQuery(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+    dispatch(setLocation(coords));
   };
 
-  const handleLoginSuccess = (loggedInUsername) => {
+  const handleLoginSuccess = (username) => {
     setIsLoginOpen(false);
-    setUsername(loggedInUsername);
   };
 
   const handleSearch = async () => {
@@ -434,64 +444,14 @@ function App() {
           </button>
         </div>
         {selectedLocation && (
-          <div style={{
-            fontSize: "14px",
-            color: "#5f6368"
-          }}>
-            Selected: {selectedLocation[0].toFixed(6)}, {selectedLocation[1].toFixed(6)}
+          <div className="location-info">
+            Selected: {selectedLocation[0].toFixed(6)},{" "}
+            {selectedLocation[1].toFixed(6)}
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
-          {username && (
-            <span style={{
-              fontSize: '14px',
-              color: '#5f6368'
-            }}>
-              {username}
-            </span>
-          )}
-          <button
-            onClick={() => {
-              if (username) {
-                // Handle logout
-                localStorage.removeItem('access_token');
-                setUsername(null);
-              } else {
-                setIsLoginOpen(true);
-              }
-            }}
-            style={{
-              backgroundColor: '#1a73e8',
-              color: 'white',
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '16px'
-            }}
-          >
-            {username ? '👤' : '🔑'}
-          </button>
-        </div>
       </div>
-      <div style={{ flex: 1, position: "relative" }}>
-        <MapContainer
-          center={[34.0522, -118.2437]}
-          zoom={13}
-          style={{ height: "100%", width: "100%" }}
-          zoomControl={false}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <LocationMarker onLocationSelect={handleLocationSelect} />
-        </MapContainer>
-      </div>
+
+      {/* Login Modal */}
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
@@ -499,6 +459,6 @@ function App() {
       />
     </div>
   );
-}
+};
 
 export default App;

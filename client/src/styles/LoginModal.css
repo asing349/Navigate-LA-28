@@ -1,0 +1,86 @@
+/* src/styles/LoginModal.css */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: slide-in 0.3s ease;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(-10%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.error-message,
+.success-message {
+  margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.error-message {
+  color: #d93025;
+  background-color: #fce8e6;
+}
+
+.success-message {
+  color: #34a853;
+  background-color: #e6f4ea;
+}
+
+.modal-content input,
+.modal-content button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  border: 1px solid #dadce0;
+}
+
+.modal-content button {
+  background-color: #1a73e8;
+  color: white;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.modal-content button:hover {
+  background-color: #155ab6;
+}
+
+.switch-mode-button {
+  background-color: transparent;
+  color: #1a73e8;
+  text-decoration: underline;
+}
+
+.close-button {
+  background-color: transparent;
+  color: #d93025;
+  font-weight: bold;
+}

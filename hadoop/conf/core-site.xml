@@ -35,7 +35,11 @@
 <property><name>fs.defaultFS</name><value>hdfs://12d26f847dc8:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://12d26f847dc8:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://12d26f847dc8:8020</value></property>
-<property><name>fs.defaultFS</name><value>hdfs://12d26f847dc8:8020</value></property>
-<property><name>fs.defaultFS</name><value>hdfs://4f3ed9ef2fd4:8020</value></property>
-<property><name>fs.defaultFS</name><value>hdfs://4f3ed9ef2fd4:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://7a94bffd8e93:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://498f01cea845:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://6d65eae4188d:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://2ba2f17ca7e3:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://28c3a8598c11:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://3632e66f8b44:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://5e7a98a4807c:8020</value></property>
 </configuration>
