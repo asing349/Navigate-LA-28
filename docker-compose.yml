@@ -55,15 +55,19 @@ services:
 
   spark:
     container_name: spark_master
-    image: bitnami/spark:3.3.0
+    build:
+      context: ./spark
+      dockerfile: Dockerfile  # Custom Dockerfile to add Hadoop
     environment:
       - SPARK_MODE=standalone
+      - DATASET_DIR=/datasets  # Path to datasets in the container
     ports:
       - "7077:7077"  # Spark Master Port
       - "8080:8080"  # Spark Master Web UI
     volumes:
       - ./spark/conf:/opt/bitnami/spark/conf
       - ./move_to_hdfs.sh:/opt/move_to_hdfs.sh  # Mount the script
+      - D:/Projects/Navigate-LA-28/datasets:/datasets  # Mount host datasets to container
     networks:
       - navigate_la_28
     command: >
@@ -72,6 +76,7 @@ services:
         bash /opt/move_to_hdfs.sh &&
         /opt/bitnami/spark/bin/spark-sql
       "
+
 
   spark-worker:
     container_name: spark_worker
