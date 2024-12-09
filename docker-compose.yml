@@ -64,6 +64,12 @@ services:
       - ./spark/conf:/opt/bitnami/spark/conf
     networks:
       - navigate_la_28
+    command: >
+      bash -c "
+        # Start SparkSQL
+        echo 'Starting SparkSQL...' &&
+        /opt/bitnami/spark/bin/spark-sql
+      "
 
   postgres:
     container_name: navigate_la_postgres

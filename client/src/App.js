@@ -304,7 +304,7 @@ function LoginModal({ isOpen, onClose, onSuccess }) {
 
 function App() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchType, setSearchType] = useState("address");
+  const [searchType, setSearchType] = useState("nearest_places");
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [username, setUsername] = useState(null);
@@ -318,6 +318,39 @@ function App() {
   const handleLoginSuccess = (loggedInUsername) => {
     setIsLoginOpen(false);
     setUsername(loggedInUsername);
+  };
+
+  const handleSearch = async () => {
+    if (!selectedLocation) {
+      alert("Please select a location on the map first");
+      return;
+    }
+
+    if (searchType === "nearest_places") {
+      try {
+        const [lat, lng] = selectedLocation;
+        console.log('Sending request with coordinates:', { lat, lng });
+
+        const response = await fetch('http://localhost:8000/api/nearest_places/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('access_token') && {
+              'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            })
+          },
+          body: JSON.stringify({ lat, long: lng })
+        });
+
+        console.log('Raw response:', response);
+        const data = await response.json();
+        console.log('Response data:', data);
+
+      } catch (error) {
+        console.error('Error details:', error);
+        alert('Failed to fetch nearest places');
+      }
+    }
   };
 
   return (
@@ -380,21 +413,23 @@ function App() {
               cursor: "pointer"
             }}
           >
-            <option value="query1">Query 1</option>
-            <option value="query2">Query 2</option>
-            <option value="query3">Query 3</option>
+            <option value="nearest_places">Nearest Places</option>
+            <option value="nearest_restrooms">Nearest Restrooms</option>
           </select>
-          <button style={{
-            backgroundColor: "#1a73e8",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            padding: "8px 16px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "500",
-            transition: "background-color 0.2s ease",
-          }}>
+          <button
+            onClick={handleSearch}
+            style={{
+              backgroundColor: "#1a73e8",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              padding: "8px 16px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "500",
+              transition: "background-color 0.2s ease",
+            }}
+          >
             Search
           </button>
         </div>
