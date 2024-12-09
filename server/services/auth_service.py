@@ -1,5 +1,5 @@
 # server/services/auth_service.py
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 from jose import jwt, JWTError
 from passlib.context import CryptContext
@@ -32,15 +32,15 @@ async def authenticate_user(db: AsyncSession, username: str, password: str):
     except Exception as e:
         # Log error details, handle or re-raise as appropriate
         # Here, we choose to simply re-raise an error for simplicity
-        raise Exception(f"Authentication failed: {str(e)}")
+        raise RuntimeError(f"Authentication failed: {str(e)}")
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     try:
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=15)  # Default to 15 minutes if no delta provided
+            expire = datetime.now(timezone.utc) + timedelta(minutes=15)  # Default to 15 minutes if no delta provided
         to_encode.update({"exp": expire})
         return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     except JWTError as e:
