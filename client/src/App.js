@@ -6,7 +6,7 @@ import Header from "./components/Header";
 import MapContainerComponent from "./components/MapContainerComponent";
 import SearchBar from "./components/SearchBar";
 import LoginModal from "./components/LoginModal";
-import "./App.css";
+import "./styles/App.css"; // Updated path for App-specific styles
 
 const App = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -60,4 +60,3 @@ const App = () => {
 };
 
 export default App;
-
