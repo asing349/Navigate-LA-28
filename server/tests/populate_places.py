@@ -41,7 +41,9 @@ def extract_coordinates(geometry_str):
     raise ValueError(f"Invalid geometry string: {geometry_str}")
 
 
-async def populate_places_from_file(db: AsyncSession, file_path: str, columns: dict, default_type: str = None):
+async def populate_places_from_file(
+    db: AsyncSession, file_path: str, columns: dict, default_type: str = None
+):
     """
     Populate the places table from a CSV file.
 
@@ -61,7 +63,9 @@ async def populate_places_from_file(db: AsyncSession, file_path: str, columns: d
                 if db_column in ["latitude", "longitude"]:
                     # Explicitly convert latitude and longitude to float
                     place_data[db_column] = float(row[csv_column])
-                elif db_column in ["latitude", "longitude"] and csv_column == "geometry":
+                elif (
+                    db_column in ["latitude", "longitude"] and csv_column == "geometry"
+                ):
                     latitude, longitude = extract_coordinates(row[csv_column])
                     place_data["latitude"] = latitude
                     place_data["longitude"] = longitude
@@ -103,7 +107,7 @@ async def main():
         #     "type": "park",
         # },
         {
-            "path": "/app/datasets/all_places.csv",
+            "path": "all_places.csv",
             "columns": {
                 "name": "name",
                 "latitude": "latitude",
@@ -113,7 +117,7 @@ async def main():
             "type": "tourist attraction",
         },
         {
-            "path": "/app/datasets/all_restrooms.csv",
+            "path": "all_restrooms.csv",
             "columns": {
                 "name": "name",
                 "latitude": "latitude",
@@ -127,7 +131,9 @@ async def main():
     # Database session
     async with AsyncSessionFactory() as db:
         for file in files:
-            await populate_places_from_file(db, file["path"], file["columns"], file.get("type"))
+            await populate_places_from_file(
+                db, file["path"], file["columns"], file.get("type")
+            )
 
 
 if __name__ == "__main__":
