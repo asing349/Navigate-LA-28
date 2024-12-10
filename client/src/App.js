@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, Popup, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -24,6 +24,16 @@ const redIcon = new L.Icon({
 // Add this after the redIcon configuration
 const greenIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Add this after the greenIcon configuration
+const busIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -332,11 +342,14 @@ function App() {
   const [resultMarkers, setResultMarkers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isPanelVisible, setIsPanelVisible] = useState(true);
+  const [busRoute, setBusRoute] = useState(null);
 
   const handleLocationSelect = (coords) => {
     setSelectedLocation(coords);
     const [lat, lng] = coords;
     setSearchQuery(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+    // Clear bus route when new location is selected
+    setBusRoute(null);
 
     // Only set default search type if no previous results exist
     if (searchResults.length === 0) {
@@ -362,6 +375,8 @@ function App() {
     setIsLoading(true);
     setResultMarkers([]);
     setSearchResults([]);
+    // Clear bus route when new search is performed
+    setBusRoute(null);
 
     try {
       const [lat, lng] = location;
@@ -400,6 +415,50 @@ function App() {
       alert(`Failed to fetch ${type.replace('_', ' ')}`);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchBusStops = async (targetLat, targetLon) => {
+    if (!selectedLocation) return;
+
+    try {
+      const url = new URL('http://localhost:8000/api/geo/direct_bus_routes/');
+      url.searchParams.append('lat1', selectedLocation[0]);
+      url.searchParams.append('long1', selectedLocation[1]);
+      url.searchParams.append('lat2', targetLat);
+      url.searchParams.append('long2', targetLon);
+      url.searchParams.append('buffer_radius', '0.5');
+
+      const response = await fetch(url, {
+        headers: {
+          ...(localStorage.getItem('access_token') && {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          })
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log('Raw API response:', responseData);
+
+      // Check if we have a success response with data
+      if (responseData.status === "success" && responseData.data) {
+        console.log('Setting bus route with data:', responseData.data);
+        setBusRoute(responseData.data);
+      } else {
+        console.log('No valid route data found:', responseData);
+        alert("No direct bus routes found between these locations");
+        setBusRoute(null);
+      }
+
+    } catch (error) {
+      console.error('Error fetching bus stops:', error);
+      alert(error.message || 'Failed to fetch bus route information');
+      setBusRoute(null);
     }
   };
 
@@ -561,6 +620,11 @@ function App() {
                 key={index}
                 position={marker.position}
                 icon={searchType === 'nearest_restrooms' ? greenIcon : redIcon}
+                eventHandlers={{
+                  click: () => {
+                    fetchBusStops(marker.position[0], marker.position[1]);
+                  }
+                }}
               >
                 <Popup>
                   <div style={{
@@ -584,6 +648,96 @@ function App() {
                       }}>{searchResults[index].description}</p>
                     )}
 
+                    {busRoute && (
+                      <div style={{
+                        margin: '8px 0',
+                        padding: '12px',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '8px',
+                        border: '1px solid #e8eaed'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginBottom: '8px',
+                          borderBottom: '1px solid #e8eaed',
+                          paddingBottom: '8px'
+                        }}>
+                          <span style={{
+                            backgroundColor: '#1a73e8',
+                            color: 'white',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }}>
+                            Route {busRoute.route_number}
+                          </span>
+                          <span style={{
+                            color: '#3c4043',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }}>
+                            {busRoute.route_name}
+                          </span>
+                        </div>
+
+                        <div style={{
+                          fontSize: '13px',
+                          color: '#5f6368',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}>
+                            <span style={{ color: '#1a73e8' }}>🚌</span>
+                            Type: {busRoute.route_type} ({busRoute.category})
+                          </div>
+
+                          <div style={{
+                            backgroundColor: 'white',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid #e8eaed'
+                          }}>
+                            <div style={{ marginBottom: '8px' }}>
+                              <div style={{ fontWeight: '500', color: '#1a73e8', marginBottom: '4px' }}>
+                                Origin Stop
+                              </div>
+                              <div>Stop #{busRoute.origin.stop_number}</div>
+                              <div>{busRoute.origin.name}</div>
+                              <div style={{ color: '#80868b', fontSize: '12px' }}>
+                                {busRoute.origin.distance} miles away
+                              </div>
+                            </div>
+
+                            <div style={{
+                              width: '100%',
+                              height: '1px',
+                              backgroundColor: '#e8eaed',
+                              margin: '8px 0'
+                            }} />
+
+                            <div>
+                              <div style={{ fontWeight: '500', color: '#1a73e8', marginBottom: '4px' }}>
+                                Destination Stop
+                              </div>
+                              <div>Stop #{busRoute.destination.stop_number}</div>
+                              <div>{busRoute.destination.name}</div>
+                              <div style={{ color: '#80868b', fontSize: '12px' }}>
+                                {busRoute.destination.distance} miles away
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div style={{
                       fontSize: '13px',
                       color: '#3c4043',
@@ -596,6 +750,7 @@ function App() {
                         gap: '4px'
                       }}>
                         📍 {searchResults[index].address || 'Address not available'}
+                        ({searchResults[index].distance?.toFixed(2) || 'N/A'} miles)
                       </p>
 
                       {searchResults[index].types && (
@@ -621,6 +776,59 @@ function App() {
                 </Popup>
               </Marker>
             ))}
+
+            {busRoute && busRoute.geometry && (
+              <>
+                <Marker
+                  position={[busRoute.origin.coordinates[1], busRoute.origin.coordinates[0]]}
+                  icon={busIcon}
+                >
+                  <Popup>
+                    <div style={{ padding: '8px', minWidth: '200px' }}>
+                      <h3 style={{ margin: '0 0 8px 0', color: '#1a73e8', fontSize: '16px' }}>
+                        Starting Bus Stop
+                      </h3>
+                      <p style={{ margin: '4px 0', fontSize: '14px' }}>
+                        🚌 Line: {busRoute.route_number}
+                      </p>
+                      <p style={{ margin: '4px 0', fontSize: '14px' }}>
+                        Name: {busRoute.origin.name}
+                      </p>
+                      <p style={{ margin: '4px 0', fontSize: '12px', color: '#666' }}>
+                        📍 Distance: {busRoute.origin.distance.toFixed(2)} miles
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
+
+                <Marker
+                  position={[busRoute.destination.coordinates[1], busRoute.destination.coordinates[0]]}
+                  icon={busIcon}
+                >
+                  <Popup>
+                    <div style={{ padding: '8px', minWidth: '200px' }}>
+                      <h3 style={{ margin: '0 0 8px 0', color: '#1a73e8', fontSize: '16px' }}>
+                        Destination Bus Stop
+                      </h3>
+                      <p style={{ margin: '4px 0', fontSize: '14px' }}>
+                        🚌 Line: {busRoute.route_number}
+                      </p>
+                      <p style={{ margin: '4px 0', fontSize: '14px' }}>
+                        Name: {busRoute.destination.name}
+                      </p>
+                      <p style={{ margin: '4px 0', fontSize: '12px', color: '#666' }}>
+                        📍 Distance: {busRoute.destination.distance.toFixed(2)} miles
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
+
+                <Polyline
+                  pathOptions={{ color: '#000000', weight: 5, opacity: 1 }}
+                  positions={busRoute.geometry.map(([lng, lat]) => [lat, lng])}
+                />
+              </>
+            )}
           </MapContainer>
         </div>
 
@@ -704,7 +912,7 @@ function App() {
                   flexDirection: 'column',
                   gap: '4px'
                 }}>
-                  <div>📍 Distance: {result.distance?.toFixed(2) || 'N/A'} meters</div>
+                  <div>📍 Distance: {result.distance?.toFixed(2) || 'N/A'} miles</div>
                   {result.address && <div>🏠 Address: {result.address}</div>}
                 </div>
               </div>
