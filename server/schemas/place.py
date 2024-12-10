@@ -34,6 +34,7 @@ class Place(PlaceBase):
     """
 
     id: int = Field(..., description="Unique identifier for the place.")
+    distance: float | None = Field(None, description="Distance to the place in meters.")
 
     class Config:
         orm_mode = True
