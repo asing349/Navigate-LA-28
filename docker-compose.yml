@@ -67,8 +67,6 @@ services:
       - "8080:8080" # Spark Master Web UI
     volumes:
       - ./spark/conf:/opt/bitnami/spark/conf
-      - ./move_to_hdfs.sh:/opt/move_to_hdfs.sh # Mount the script
-      - D:/Projects/Navigate-LA-28/datasets:/datasets # Mount host datasets to container
     networks:
       - navigate_la_28
     command: >
