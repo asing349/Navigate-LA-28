@@ -337,7 +337,15 @@ function App() {
     setSelectedLocation(coords);
     const [lat, lng] = coords;
     setSearchQuery(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-    handleSearch(coords, searchType);
+
+    // Only set default search type if no previous results exist
+    if (searchResults.length === 0) {
+      setSearchType("nearest_places");
+      handleSearch(coords, "nearest_places");
+    } else {
+      // Otherwise use current search type
+      handleSearch(coords, searchType);
+    }
   };
 
   const handleLoginSuccess = (loggedInUsername) => {
