@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 
 from models.base import Base
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -23,11 +24,12 @@ class User(Base):
     country = Column(String, nullable=True)
 
     # Relationships
-    usages = relationship("CustomerUsage", back_populates="user", cascade="all, delete-orphan")
-    reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan")
+    usages = relationship(
+        "CustomerUsage", back_populates="user", cascade="all, delete-orphan")
+    reviews = relationship("Review", back_populates="user",
+                           cascade="all, delete-orphan")
 
     # Unique constraint for additional validation
     __table_args__ = (
         UniqueConstraint("username", name="unique_username_constraint"),
     )
-

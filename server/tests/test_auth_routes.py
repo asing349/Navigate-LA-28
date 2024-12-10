@@ -4,6 +4,7 @@ import pytest
 
 from main import app
 
+
 @pytest.mark.asyncio
 async def test_login_for_access_token(async_db):
     """Test valid login for access token retrieval."""
@@ -11,8 +12,10 @@ async def test_login_for_access_token(async_db):
     async with async_db.begin():
         from models.user import User as UserModel
         import bcrypt
-        hashed_password = bcrypt.hashpw("password123".encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        user = UserModel(username="testuser", password=hashed_password, dob="2000-01-01", country="US")
+        hashed_password = bcrypt.hashpw("password123".encode(
+            "utf-8"), bcrypt.gensalt()).decode("utf-8")
+        user = UserModel(
+            username="testuser", password=hashed_password, dob="2000-01-01", country="US")
         async_db.add(user)
 
     # Perform the login request
@@ -23,6 +26,7 @@ async def test_login_for_access_token(async_db):
         assert "access_token" in json_response
         assert json_response["token_type"] == "bearer"
 
+
 @pytest.mark.asyncio
 async def test_login_bad_credentials(async_db):
     """Test login with incorrect credentials."""
@@ -30,8 +34,10 @@ async def test_login_bad_credentials(async_db):
     async with async_db.begin():
         from models.user import User as UserModel
         import bcrypt
-        hashed_password = bcrypt.hashpw("password123".encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        user = UserModel(username="testuser", password=hashed_password, dob="2000-01-01", country="US")
+        hashed_password = bcrypt.hashpw("password123".encode(
+            "utf-8"), bcrypt.gensalt()).decode("utf-8")
+        user = UserModel(
+            username="testuser", password=hashed_password, dob="2000-01-01", country="US")
         async_db.add(user)
 
     # Attempt login with incorrect credentials

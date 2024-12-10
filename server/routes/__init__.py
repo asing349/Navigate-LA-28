@@ -17,3 +17,6 @@ api_router.include_router(
     customer_usage_router, prefix="/customer-usage", tags=["Customer Usage"]
 )
 api_router.include_router(geo_router, prefix="/geo", tags=["Geo"])
+api_router.include_router(
+    customer_usage_router, prefix="/customer-usage", tags=["Customer Usage"]
+)

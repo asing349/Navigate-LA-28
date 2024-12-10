@@ -9,6 +9,8 @@ from models.base import Base
 from config.database import get_db
 
 # Define an asynchronous fixture for the database
+
+
 @pytest.fixture(scope="session")
 async def async_engine():
     # Create an asynchronous engine for the test database
@@ -28,6 +30,7 @@ async def async_engine():
 
     await engine.dispose()
 
+
 @pytest.fixture(scope="session")
 async def async_db(async_engine):
     """Creates a new database session for testing."""
@@ -38,6 +41,7 @@ async def async_db(async_engine):
     )
     async with async_session() as session:
         yield session
+
 
 @pytest.fixture
 def client(async_db):

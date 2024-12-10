@@ -7,28 +7,29 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from models.user import User as UserModel
-from schemas.user import UserAuth
 
-# Constants
-SECRET_KEY = os.getenv("SECRET_KEY", "YOUR_SECRET_KEY")  # Fetch from environment variables or default
+SECRET_KEY = "YOUR_SECRET_KEY"  # Replace with your secure key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password):
     return pwd_context.hash(password)
+
 
 async def authenticate_user(db: AsyncSession, username: str, password: str):
     try:
         result = await db.execute(select(UserModel).filter(UserModel.username == username))
         user = result.scalars().first()
-        if not user or not verify_password(password, user.password):
-            return False
-        return user
+        if user and verify_password(password, user.password):
+            return user
+        return None
     except Exception as e:
         # Log error details, handle or re-raise as appropriate
         # Here, we choose to simply re-raise an error for simplicity

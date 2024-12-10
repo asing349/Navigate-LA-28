@@ -12,8 +12,8 @@ from schemas.user import UserCreate
 
 async def create_user(db: AsyncSession, user: UserCreate) -> UserModel:
     try:
-        # Hash the user's password before storing it in the database
-        hashed_password = bcrypt.hashpw(user.password.encode("utf-8"), bcrypt.gensalt())
+        hashed_password = bcrypt.hashpw(
+            user.password.encode("utf-8"), bcrypt.gensalt())
         db_user = UserModel(
             username=user.username,
             password=hashed_password.decode("utf-8"),
@@ -34,16 +34,18 @@ async def create_user(db: AsyncSession, user: UserCreate) -> UserModel:
         result = await db.execute(stmt)
         return result.scalars().first()
     except SQLAlchemyError as e:
-        # Rollback in case of an error
         await db.rollback()
         raise Exception(f"Error creating user: {str(e)}")
 
 
 async def get_user(db: AsyncSession, user_id: int) -> Optional[UserModel]:
     try:
-        # Retrieve user by ID
         result = await db.execute(select(UserModel).filter(UserModel.id == user_id))
-        return result.scalars().first()
+        user = result.scalars().first()
+        if user:
+            # Explicitly load relationships in async context
+            await db.refresh(user)
+        return user
     except SQLAlchemyError as e:
         raise Exception(f"Error fetching user: {str(e)}")
 

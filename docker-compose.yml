@@ -26,6 +26,7 @@ services:
       - "8000:8000"
     volumes:
       - ./server:/app
+      - ./server/datasets:/app/datasets
     environment:
       - PYTHONPATH=/app
     networks:
@@ -57,13 +58,13 @@ services:
     container_name: spark_master
     build:
       context: ./spark
-      dockerfile: Dockerfile  # Custom Dockerfile to add Hadoop
+      dockerfile: Dockerfile # Custom Dockerfile to add Hadoop
     environment:
       - SPARK_MODE=standalone
-      - DATASET_DIR=/datasets  # Path to datasets in the container
+      - DATASET_DIR=/datasets # Path to datasets in the container
     ports:
-      - "7077:7077"  # Spark Master Port
-      - "8080:8080"  # Spark Master Web UI
+      - "7077:7077" # Spark Master Port
+      - "8080:8080" # Spark Master Web UI
     volumes:
       - ./spark/conf:/opt/bitnami/spark/conf
     networks:
@@ -74,7 +75,6 @@ services:
         bash /opt/move_to_hdfs.sh &&
         /opt/bitnami/spark/bin/spark-sql
       "
-
 
   spark-worker:
     container_name: spark_worker
@@ -87,7 +87,7 @@ services:
     networks:
       - navigate_la_28
     ports:
-      - "8081:8081"  # Spark Worker Web UI
+      - "8081:8081" # Spark Worker Web UI
     command: >
       bash -c "
         /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark:7077
@@ -115,7 +115,7 @@ services:
       POSTGRES_PASSWORD: bigdata_la28
       POSTGRES_DB: navigate_la28_test_db
     ports:
-      - "5434:5432"  # Use a different port to avoid conflicts with the production database
+      - "5434:5432" # Use a different port to avoid conflicts with the production database
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     networks:
