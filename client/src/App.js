@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -9,6 +9,26 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+// Add a new red icon configuration after the default icon setup
+const redIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Add this after the redIcon configuration
+const greenIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
 });
 
 function LocationMarker({ onLocationSelect }) {
@@ -309,11 +329,15 @@ function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [username, setUsername] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
+  const [resultMarkers, setResultMarkers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPanelVisible, setIsPanelVisible] = useState(true);
 
   const handleLocationSelect = (coords) => {
     setSelectedLocation(coords);
     const [lat, lng] = coords;
     setSearchQuery(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+    handleSearch(coords, searchType);
   };
 
   const handleLoginSuccess = (loggedInUsername) => {
@@ -321,15 +345,19 @@ function App() {
     setUsername(loggedInUsername);
   };
 
-  const handleSearch = async () => {
-    if (!selectedLocation) {
+  const handleSearch = async (location = selectedLocation, type = searchType) => {
+    if (!location) {
       alert("Please select a location on the map first");
       return;
     }
 
+    setIsLoading(true);
+    setResultMarkers([]);
+    setSearchResults([]);
+
     try {
-      const [lat, lng] = selectedLocation;
-      const endpoint = searchType === "nearest_places"
+      const [lat, lng] = location;
+      const endpoint = type === "nearest_places"
         ? 'nearest_places'
         : 'nearest_restrooms';
 
@@ -352,9 +380,18 @@ function App() {
 
       const data = await response.json();
       setSearchResults(data);
+
+      // Update markers from the search results
+      const markers = data.map(result => ({
+        position: [result.latitude, result.longitude],
+        name: result.name || 'Unnamed Location'
+      }));
+      setResultMarkers(markers);
     } catch (error) {
       console.error('Error details:', error);
-      alert(`Failed to fetch ${searchType.replace('_', ' ')}`);
+      alert(`Failed to fetch ${type.replace('_', ' ')}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -407,7 +444,14 @@ function App() {
           />
           <select
             value={searchType}
-            onChange={(e) => setSearchType(e.target.value)}
+            onChange={(e) => {
+              setSearchType(e.target.value);
+              setResultMarkers([]); // Clear markers when switching search type
+              setSearchResults([]); // Clear results when switching search type
+              if (selectedLocation) { // Only trigger search if location is selected
+                handleSearch(selectedLocation, e.target.value);
+              }
+            }}
             style={{
               padding: "8px 12px",
               border: "none",
@@ -483,51 +527,225 @@ function App() {
           </button>
         </div>
       </div>
-      <div style={{ flex: 1, position: "relative" }}>
-        <MapContainer
-          center={[34.0522, -118.2437]}
-          zoom={13}
-          style={{ height: "100%", width: "100%" }}
-          zoomControl={false}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <LocationMarker onLocationSelect={handleLocationSelect} />
-        </MapContainer>
+      <div style={{
+        flex: 1,
+        display: "flex",
+        gap: "20px",
+        padding: "20px"
+      }}>
+        <div style={{
+          flex: searchResults.length && isPanelVisible ? "1 1 70%" : "1 1 100%",
+          transition: "flex 0.3s ease"
+        }}>
+          <MapContainer
+            center={[34.0522, -118.2437]}
+            zoom={13}
+            style={{ height: "100%", width: "100%" }}
+            zoomControl={false}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <LocationMarker onLocationSelect={handleLocationSelect} />
+            {resultMarkers.map((marker, index) => (
+              <Marker
+                key={index}
+                position={marker.position}
+                icon={searchType === 'nearest_restrooms' ? greenIcon : redIcon}
+              >
+                <Popup>
+                  <div style={{
+                    padding: '8px',
+                    minWidth: '200px',
+                    maxWidth: '300px'
+                  }}>
+                    <h3 style={{
+                      margin: '0 0 8px 0',
+                      color: '#1a73e8',
+                      fontSize: '16px',
+                      borderBottom: '1px solid #eee',
+                      paddingBottom: '8px'
+                    }}>{marker.name}</h3>
+
+                    {searchResults[index].description && (
+                      <p style={{
+                        margin: '4px 0',
+                        fontSize: '14px',
+                        color: '#5f6368'
+                      }}>{searchResults[index].description}</p>
+                    )}
+
+                    <div style={{
+                      fontSize: '13px',
+                      color: '#3c4043',
+                      marginTop: '8px'
+                    }}>
+                      <p style={{
+                        margin: '4px 0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        📍 {searchResults[index].address || 'Address not available'}
+                      </p>
+
+                      {searchResults[index].types && (
+                        <p style={{
+                          margin: '4px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          🏷️ {searchResults[index].types}
+                        </p>
+                      )}
+
+                      <p style={{
+                        margin: '4px 0',
+                        fontSize: '12px',
+                        color: '#80868b'
+                      }}>
+                        📌 {searchResults[index].latitude.toFixed(6)}, {searchResults[index].longitude.toFixed(6)}
+                      </p>
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        </div>
+
+        {searchResults.length > 0 && (
+          <div style={{
+            flex: isPanelVisible ? "1 1 30%" : "0 0 auto",
+            backgroundColor: 'white',
+            padding: isPanelVisible ? '15px' : '8px',
+            borderRadius: '8px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+            maxHeight: 'calc(100vh - 140px)',
+            overflowY: 'auto',
+            alignSelf: 'flex-start',
+            transition: 'all 0.3s ease',
+            width: isPanelVisible ? 'auto' : '40px',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: isPanelVisible ? 'space-between' : 'center',
+              alignItems: 'center',
+              marginBottom: isPanelVisible ? '15px' : '0',
+              borderBottom: isPanelVisible ? '1px solid #eee' : 'none',
+              paddingBottom: isPanelVisible ? '10px' : '0'
+            }}>
+              {isPanelVisible && (
+                <h3 style={{
+                  margin: '0',
+                  color: '#1a73e8',
+                  fontSize: '18px',
+                  fontWeight: '500'
+                }}>Search Results</h3>
+              )}
+              <button
+                onClick={() => setIsPanelVisible(!isPanelVisible)}
+                style={{
+                  backgroundColor: '#1a73e8',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '36px',
+                  height: '36px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '18px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  outline: 'none',
+                  padding: 0,
+                  transform: isPanelVisible ? 'rotate(0deg)' : 'rotate(180deg)'
+                }}
+              >
+                ›
+              </button>
+            </div>
+
+            {isPanelVisible && searchResults.map((result, index) => (
+              <div key={index} style={{
+                padding: '12px',
+                borderBottom: '1px solid #eee',
+                fontSize: '14px',
+                backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'white',
+                borderRadius: '4px',
+                marginBottom: '8px'
+              }}>
+                <div style={{
+                  fontWeight: '500',
+                  color: '#1a73e8',
+                  marginBottom: '4px'
+                }}>
+                  {result.name || 'Unnamed Location'}
+                </div>
+                <div style={{
+                  color: '#5f6368',
+                  fontSize: '13px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  <div>📍 Distance: {result.distance?.toFixed(2) || 'N/A'} meters</div>
+                  {result.address && <div>🏠 Address: {result.address}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
         onSuccess={handleLoginSuccess}
       />
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        backgroundColor: 'white',
-        padding: '15px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-        maxHeight: '80vh',
-        overflowY: 'auto',
-        width: '300px',
-        display: searchResults.length ? 'block' : 'none'
-      }}>
-        <h3 style={{ margin: '0 0 10px 0' }}>Search Results</h3>
-        {searchResults.map((result, index) => (
-          <div key={index} style={{
-            padding: '10px',
-            borderBottom: '1px solid #eee',
-            fontSize: '14px'
-          }}>
-            <div style={{ fontWeight: 'bold' }}>{result.name || 'Unnamed Location'}</div>
-            <div>Distance: {result.distance?.toFixed(2) || 'N/A'} meters</div>
-            {result.address && <div>Address: {result.address}</div>}
+      {isLoading && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #1a73e8',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <div style={{ color: '#5f6368', fontSize: '14px' }}>
+            Searching nearby locations...
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 }

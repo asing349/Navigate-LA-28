@@ -15,10 +15,8 @@ async def nearest_places_route(
     lat: float, long: float, db: AsyncSession = Depends(get_db)
 ):
     try:
-        print(f"Received coordinates: lat={lat}, long={long}")
         return await nearest_places(db, lat, long)
     except Exception as e:
-        print(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )

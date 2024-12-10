@@ -45,4 +45,16 @@
 <property><name>fs.defaultFS</name><value>hdfs://01dffeedb7c6:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://f9a2a3e6ab9c:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://d526f040e9c7:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://9345422d83f9:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://a8ca6151a72a:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://85b0bc1532a8:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://2bc58526c1b4:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://97312ae3b8cc:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://6d0dae1188a6:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://45fb90662a4f:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://ef54f89e72e2:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://hadoop-namenode:9000</value></property>
+<property><name>hadoop.http.staticuser.user</name><value>root</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://d49481b9c58c:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://hadoop:9000</value></property>
 </configuration>
