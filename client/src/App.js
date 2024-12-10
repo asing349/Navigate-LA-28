@@ -1,14 +1,8 @@
-// src/App.js
 import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { setLocation } from "./slices/locationSlice";
-import Header from "./components/Header";
-import MapContainerComponent from "./components/MapContainerComponent";
-import SearchBar from "./components/SearchBar";
-import LoginModal from "./components/LoginModal";
-import "./App.css";
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
-<<<<<<< HEAD
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -312,22 +306,19 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState("nearest_places");
   const [selectedLocation, setSelectedLocation] = useState(null);
-=======
-const App = () => {
->>>>>>> 5ac6c53c86b5d3bc0cbc9153afe0c09c45438412
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchType, setSearchType] = useState("query1");
-  const { selectedLocation } = useSelector((state) => state.location);
-  const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
+  const [username, setUsername] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
 
   const handleLocationSelect = (coords) => {
-    dispatch(setLocation(coords));
+    setSelectedLocation(coords);
+    const [lat, lng] = coords;
+    setSearchQuery(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
   };
 
-  const handleLoginSuccess = (username) => {
+  const handleLoginSuccess = (loggedInUsername) => {
     setIsLoginOpen(false);
+    setUsername(loggedInUsername);
   };
 
   const handleSearch = async () => {
@@ -336,30 +327,34 @@ const App = () => {
       return;
     }
 
-    if (searchType === "nearest_places") {
-      try {
-        const [lat, lng] = selectedLocation;
-        console.log('Sending request with coordinates:', { lat, lng });
+    try {
+      const [lat, lng] = selectedLocation;
+      const endpoint = searchType === "nearest_places"
+        ? 'nearest_places'
+        : 'nearest_restrooms';
 
-        const response = await fetch('http://localhost:8000/api/nearest_places/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(localStorage.getItem('access_token') && {
-              'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            })
-          },
-          body: JSON.stringify({ lat, long: lng })
-        });
+      const url = new URL(`http://localhost:8000/api/geo/${endpoint}/`);
+      url.searchParams.append('lat', lat);
+      url.searchParams.append('long', lng);
 
-        console.log('Raw response:', response);
-        const data = await response.json();
-        console.log('Response data:', data);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          ...(localStorage.getItem('access_token') && {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          })
+        }
+      });
 
-      } catch (error) {
-        console.error('Error details:', error);
-        alert('Failed to fetch nearest places');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      setSearchResults(data);
+    } catch (error) {
+      console.error('Error details:', error);
+      alert(`Failed to fetch ${searchType.replace('_', ' ')}`);
     }
   };
 
@@ -444,21 +439,97 @@ const App = () => {
           </button>
         </div>
         {selectedLocation && (
-          <div className="location-info">
-            Selected: {selectedLocation[0].toFixed(6)},{" "}
-            {selectedLocation[1].toFixed(6)}
+          <div style={{
+            fontSize: "14px",
+            color: "#5f6368"
+          }}>
+            Selected: {selectedLocation[0].toFixed(6)}, {selectedLocation[1].toFixed(6)}
           </div>
         )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+          {username && (
+            <span style={{
+              fontSize: '14px',
+              color: '#5f6368'
+            }}>
+              {username}
+            </span>
+          )}
+          <button
+            onClick={() => {
+              if (username) {
+                // Handle logout
+                localStorage.removeItem('access_token');
+                setUsername(null);
+              } else {
+                setIsLoginOpen(true);
+              }
+            }}
+            style={{
+              backgroundColor: '#1a73e8',
+              color: 'white',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '16px'
+            }}
+          >
+            {username ? '👤' : '🔑'}
+          </button>
+        </div>
       </div>
-
-      {/* Login Modal */}
+      <div style={{ flex: 1, position: "relative" }}>
+        <MapContainer
+          center={[34.0522, -118.2437]}
+          zoom={13}
+          style={{ height: "100%", width: "100%" }}
+          zoomControl={false}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <LocationMarker onLocationSelect={handleLocationSelect} />
+        </MapContainer>
+      </div>
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
         onSuccess={handleLoginSuccess}
       />
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+        backgroundColor: 'white',
+        padding: '15px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+        maxHeight: '80vh',
+        overflowY: 'auto',
+        width: '300px',
+        display: searchResults.length ? 'block' : 'none'
+      }}>
+        <h3 style={{ margin: '0 0 10px 0' }}>Search Results</h3>
+        {searchResults.map((result, index) => (
+          <div key={index} style={{
+            padding: '10px',
+            borderBottom: '1px solid #eee',
+            fontSize: '14px'
+          }}>
+            <div style={{ fontWeight: 'bold' }}>{result.name || 'Unnamed Location'}</div>
+            <div>Distance: {result.distance?.toFixed(2) || 'N/A'} meters</div>
+            {result.address && <div>Address: {result.address}</div>}
+          </div>
+        ))}
+      </div>
     </div>
   );
-};
+}
 
 export default App;

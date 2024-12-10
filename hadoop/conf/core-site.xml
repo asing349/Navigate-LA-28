@@ -54,4 +54,6 @@
 <property><name>fs.defaultFS</name><value>hdfs://06a68cb19e1d:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://f97ce2941306:8020</value></property>
 <property><name>fs.defaultFS</name><value>hdfs://f97ce2941306:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://9345422d83f9:8020</value></property>
+<property><name>fs.defaultFS</name><value>hdfs://9345422d83f9:8020</value></property>
 </configuration>
