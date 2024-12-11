@@ -1,16 +1,56 @@
-# Ignore Python cache files
-__pycache__/
-.pytest_cache/
+# Python-related files to ignore
+__pycache__/       
+*/__pycache__
+.pytest_cache/     
+*.pyc              
+*.pyo              
+*.pyd              
 
-# Add other files or directories to ignore as needed
-*.pyc
-*.pyo
-*.pyd
+# Environment files containing sensitive credentials or configurations
+.env               
+.env.server        
 
-# Environment files (if using virtual environments in the server directory)
-.env
-.env.server
+# Logs and temporary files
+*.log              
+*.tmp              
+*.bak              
 
-# Ignore logs, temp files, or other files
-*.log
+# Ignore IDE and editor-specific files
+.vscode/           
+.idea/             
+*.swp              
 
+# Ignore Docker-related files
+*.env.docker       
+docker-compose.override.yml  
+
+# Ignore system files
+.DS_Store          
+Thumbs.db          
+
+# Ignore dependency files
+*.egg-info/        
+pip-log.txt        
+pip-delete-this-directory.txt  
+
+# Ignore coverage reports and test artifacts
+htmlcov/           
+coverage.xml       
+*.cover            
+.cache/            
+nosetests.xml      
+junit*.xml         
+
+# Ignore build files
+build/             
+dist/              
+*.spec             
+
+# Ignore Spark/Hadoop temporary files
+metastore_db/      
+derby.log          
+hadoop.tmp.dir/    
+
+# Ignore database migration files (if dynamically generated)
+migrations/        
+temp.md

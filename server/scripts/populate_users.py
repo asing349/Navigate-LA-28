@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
 
 # docker exec -it navigate_la_backend bash
-# python tests/populate_users.py
+# python scripts/populate_users.py
 
 # docker exec -it navigate_la_postgres psql -U la28_user -d navigate_la28_db
 # SELECT id, username, dob, country FROM users LIMIT 10;
