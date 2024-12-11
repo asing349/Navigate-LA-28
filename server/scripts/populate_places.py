@@ -140,7 +140,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 
 # docker exec -it navigate_la_backend bash
-# python tests/populate_places.py
+# python scripts/populate_places.py
 
 # docker exec -it navigate_la_postgres psql -U la28_user -d navigate_la28_db
 # SELECT COUNT(*) FROM places;

@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
 # Usage instructions:
 # docker exec -it navigate_la_backend bash
-# python tests/populate_reviews.py
+# python scripts/populate_reviews.py
 
 # To verify:
 # docker exec -it navigate_la_postgres psql -U la28_user -d navigate_la28_db

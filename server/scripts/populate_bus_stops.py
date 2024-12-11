@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
 # To run:
 # docker exec -it navigate_la_backend bash
-# python tests/populate_bus_stops.py
+# python scripts/populate_bus_stops.py
 
 # To verify:
 # docker exec -it navigate_la_postgres psql -U la28_user -d navigate_la28_db
