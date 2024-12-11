@@ -7,6 +7,7 @@ from routes.auth_routes import router as auth_router
 from routes.review_routes import router as review_router
 from routes.customer_usage_routes import router as customer_usage_router
 from routes.geo_routes import router as geo_router
+from routes.analytics_routes import router as analytics_router
 
 # Create a main router that includes all the other routers
 api_router = APIRouter()
@@ -20,3 +21,4 @@ api_router.include_router(geo_router, prefix="/geo", tags=["Geo"])
 api_router.include_router(
     customer_usage_router, prefix="/customer-usage", tags=["Customer Usage"]
 )
+api_router.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])

@@ -53,3 +53,9 @@ async def read_root():
     Root endpoint to verify the server is running.
     """
     return {"message": "Welcome to the API!"}
+
+
+@app.get("/url-list")
+def get_all_urls():
+    url_list = [{"path": route.path, "name": route.name} for route in app.routes]
+    return url_list

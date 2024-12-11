@@ -1,4 +1,6 @@
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from models import Base  # This will import and initialize all models
 from yarl import URL as MultiHostUrl
 import os
 from dotenv import load_dotenv
@@ -38,9 +40,9 @@ engine = create_async_engine(
     db_config.database_url, echo=True, future=True, pool_pre_ping=True
 )
 
-AsyncSessionFactory = async_sessionmaker(
+AsyncSessionFactory = sessionmaker(
     engine,
-    autoflush=False,
+    class_=AsyncSession,
     expire_on_commit=False,
 )
 

@@ -9,6 +9,7 @@ from services.geo_service import (
     nearest_places,
     find_direct_bus_lines,
     direct_bus_routes,
+    create_attraction_visit_plan,
 )
 from config.database import get_db
 
@@ -60,6 +61,32 @@ async def direct_bus_routes_route(
             lat2=lat2,
             long2=long2,
             buffer_radius=buffer_radius,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+
+
+@router.get("/attraction_plan/", response_model=Dict[str, Any])
+async def attraction_plan_route(
+    lat: float,
+    long: float,
+    max_places: int = 5,
+    visit_duration_hours: float | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get a suggested plan for visiting nearby attractions.
+    Returns an itinerary with timing and attraction details.
+    """
+    try:
+        return await create_attraction_visit_plan(
+            db=db,
+            lat=lat,
+            long=long,
+            max_places=max_places,
+            visit_duration_hours=visit_duration_hours,
         )
     except Exception as e:
         raise HTTPException(
