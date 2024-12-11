@@ -354,6 +354,127 @@ function LoginModal({ isOpen, onClose, onSuccess }) {
   );
 }
 
+function ReviewModal({ isOpen, onClose, place }) {
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    // Simulate submission delay
+    setTimeout(() => {
+      console.log('Review submitted:', { rating, review, place });
+      setIsLoading(false);
+      onClose();
+    }, 1000);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        padding: '24px',
+        borderRadius: '8px',
+        width: '100%',
+        maxWidth: '400px',
+        position: 'relative'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '24px'
+        }}>
+          <h2 style={{ margin: 0, color: '#202124', fontSize: '24px' }}>
+            Write a Review
+          </h2>
+          <button onClick={onClose} style={{
+            border: 'none',
+            background: 'none',
+            fontSize: '24px',
+            cursor: 'pointer'
+          }}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '8px', color: '#5f6368' }}>Rating</div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    color: star <= rating ? '#fbbc04' : '#e0e0e0'
+                  }}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '8px', color: '#5f6368' }}>Your Review</div>
+            <textarea
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              placeholder="Share your experience..."
+              style={{
+                width: '100%',
+                minHeight: '120px',
+                padding: '12px',
+                borderRadius: '4px',
+                border: '1px solid #dadce0',
+                fontSize: '14px',
+                resize: 'vertical'
+              }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading || rating === 0}
+            style={{
+              backgroundColor: '#1a73e8',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '8px 24px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: isLoading || rating === 0 ? 'not-allowed' : 'pointer',
+              opacity: isLoading || rating === 0 ? 0.7 : 1,
+              width: '100%'
+            }}
+          >
+            {isLoading ? 'Submitting...' : 'Submit Review'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function Analytics() {
   const [data, setData] = useState({
     attractions: null,
@@ -378,42 +499,33 @@ function Analytics() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (data[activeSubTab] !== null) return;
+      console.log('Current data state:', data); // Debug current data state
+      console.log('Current activeSubTab:', activeSubTab); // Debug active tab
 
+      // Remove the data check that's preventing the fetch
       setIsLoading(true);
       setError(null);
       try {
-        // Build the URL with query parameters based on the tab
-        let url = `http://localhost:8000/api/analytics/${activeSubTab}`;
-        const queryParams = new URLSearchParams();
+        const endpointMap = {
+          'attractions': 'attractions',
+          'demographics': 'demographics',
+          'bus-routes': 'bus-routes',
+          'popular-stops': 'popular-stops',
+          'geographic-distribution': 'geographic-distribution'
+        };
 
-        // Add specific query parameters based on the tab
-        switch (activeSubTab) {
-          case 'attractions':
-            queryParams.append('limit', '10');
-            break;
-          case 'bus-routes':
-            queryParams.append('limit', '10');
-            break;
-          case 'popular-stops':
-            queryParams.append('limit', '10');
-            break;
-          // demographics and geographic-distribution don't need query params
-          default:
-            break;
-        }
+        const endpoint = endpointMap[activeSubTab] || activeSubTab;
+        let url = `http://localhost:8000/api/analytics/${endpoint}`;
 
-        // Append query parameters if any exist
-        const queryString = queryParams.toString();
-        if (queryString) {
-          url += `?${queryString}`;
-        }
+        console.log('Fetching from URL:', url);
 
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
         const responseData = await response.json();
+        console.log('Received data:', responseData);
+
         setData(prevData => ({
           ...prevData,
           [activeSubTab]: responseData
@@ -427,57 +539,161 @@ function Analytics() {
     };
 
     fetchData();
-  }, [activeSubTab]);
+  }, [activeSubTab]); // Remove data from dependencies
 
   const getChartData = () => {
     const currentData = data[activeSubTab];
     if (!currentData) return null;
 
-    const defaultOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'top',
-          labels: {
-            padding: 20,
-            font: {
-              size: 12
-            }
-          }
-        },
-        title: {
-          display: true,
-          text: getChartTitle(),
-          font: {
-            size: 16,
-            weight: 'bold'
-          },
-          padding: 20
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            font: {
-              size: 12
-            }
-          }
-        },
-        x: {
-          ticks: {
-            font: {
-              size: 12
-            },
-            maxRotation: 45,
-            minRotation: 45
-          }
-        }
-      }
-    };
-
     switch (activeSubTab) {
+      case 'demographics':
+        const currentData = data[activeSubTab];
+        if (!currentData || !currentData.age || !currentData.country) return null;
+
+        // Create datasets for age demographics
+        const ageReviewsData = {
+          labels: currentData.age.reviews.map(item => item.age_group),
+          datasets: [
+            {
+              label: 'Total Reviews',
+              data: currentData.age.reviews.map(item => item.total_reviews),
+              backgroundColor: 'rgba(75, 192, 192, 0.5)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Average Rating',
+              data: currentData.age.reviews.map(item => item.avg_rating),
+              backgroundColor: 'rgba(255, 206, 86, 0.5)',
+              borderColor: 'rgba(255, 206, 86, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Active Reviewers',
+              data: currentData.age.reviews.map(item => item.active_reviewers),
+              backgroundColor: 'rgba(54, 162, 235, 0.5)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }
+          ]
+        };
+
+        const ageBusData = {
+          labels: currentData.age.bus_usage.map(item => item.age_group),
+          datasets: [
+            {
+              label: 'Total Trips',
+              data: currentData.age.bus_usage.map(item => item.total_trips),
+              backgroundColor: 'rgba(153, 102, 255, 0.5)',
+              borderColor: 'rgba(153, 102, 255, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Active Riders',
+              data: currentData.age.bus_usage.map(item => item.active_riders),
+              backgroundColor: 'rgba(255, 159, 64, 0.5)',
+              borderColor: 'rgba(255, 159, 64, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Trips per User',
+              data: currentData.age.bus_usage.map(item => item.trips_per_user),
+              backgroundColor: 'rgba(75, 192, 192, 0.5)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }
+          ]
+        };
+
+        // Create datasets for country demographics
+        const countryReviewsData = {
+          labels: currentData.country.reviews.map(item => item.country),
+          datasets: [
+            {
+              label: 'Total Reviews',
+              data: currentData.country.reviews.map(item => item.total_reviews),
+              backgroundColor: 'rgba(75, 192, 192, 0.5)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Average Rating',
+              data: currentData.country.reviews.map(item => item.avg_rating),
+              backgroundColor: 'rgba(255, 206, 86, 0.5)',
+              borderColor: 'rgba(255, 206, 86, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Active Reviewers',
+              data: currentData.country.reviews.map(item => item.active_reviewers),
+              backgroundColor: 'rgba(54, 162, 235, 0.5)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }
+          ]
+        };
+
+        const countryBusData = {
+          labels: currentData.country.bus_usage.map(item => item.country),
+          datasets: [
+            {
+              label: 'Total Trips',
+              data: currentData.country.bus_usage.map(item => item.total_trips),
+              backgroundColor: 'rgba(153, 102, 255, 0.5)',
+              borderColor: 'rgba(153, 102, 255, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Active Riders',
+              data: currentData.country.bus_usage.map(item => item.active_riders),
+              backgroundColor: 'rgba(255, 159, 64, 0.5)',
+              borderColor: 'rgba(255, 159, 64, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Trips per User',
+              data: currentData.country.bus_usage.map(item => item.trips_per_user),
+              backgroundColor: 'rgba(75, 192, 192, 0.5)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }
+          ]
+        };
+
+        return {
+          ageReviewsData,
+          ageBusData,
+          countryReviewsData,
+          countryBusData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+              title: {
+                display: true,
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              },
+              x: {
+                ticks: {
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            }
+          }
+        };
+
       case 'attractions':
         return {
           data: {
@@ -491,18 +707,44 @@ function Analytics() {
             }]
           },
           options: {
-            ...defaultOptions,
-            scales: {
-              ...defaultOptions.scales,
-              y: {
-                ...defaultOptions.scales.y,
-                max: 5,
-                title: {
-                  display: true,
-                  text: 'Rating (out of 5)',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  padding: 20,
                   font: {
-                    size: 14
+                    size: 12
                   }
+                }
+              },
+              title: {
+                display: true,
+                text: getChartTitle(),
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: 20
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    size: 12
+                  },
+                  maxRotation: 45,
+                  minRotation: 45
                 }
               }
             }
@@ -510,88 +752,8 @@ function Analytics() {
         };
 
       case 'demographics':
-        return {
-          data: {
-            labels: Object.keys(currentData.age_distribution || {}),
-            datasets: [{
-              data: Object.values(currentData.age_distribution || {}),
-              backgroundColor: [
-                'rgba(255, 99, 132, 0.7)',
-                'rgba(54, 162, 235, 0.7)',
-                'rgba(255, 206, 86, 0.7)',
-                'rgba(75, 192, 192, 0.7)',
-                'rgba(153, 102, 255, 0.7)',
-              ],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            ...defaultOptions,
-            plugins: {
-              ...defaultOptions.plugins,
-              legend: {
-                ...defaultOptions.plugins.legend,
-                position: 'right'
-              }
-            }
-          }
-        };
+        if (!currentData || !Array.isArray(currentData)) return null;
 
-      case 'bus-routes':
-        return {
-          data: {
-            labels: currentData.map(route => route.route_number),
-            datasets: [{
-              label: 'Number of Trips',
-              data: currentData.map(route => route.trip_count),
-              backgroundColor: 'rgba(26, 115, 232, 0.5)',
-              borderColor: 'rgba(26, 115, 232, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: defaultOptions
-        };
-
-      case 'popular-stops':
-        return {
-          data: {
-            labels: currentData.map(stop => stop.stop_name),
-            datasets: [{
-              label: 'Usage Count',
-              data: currentData.map(stop => stop.usage_count),
-              backgroundColor: 'rgba(26, 115, 232, 0.5)',
-              borderColor: 'rgba(26, 115, 232, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: defaultOptions
-        };
-
-      case 'geographic-distribution':
-        return {
-          data: {
-            labels: Object.keys(currentData || {}),
-            datasets: [{
-              data: Object.values(currentData || {}),
-              backgroundColor: [
-                'rgba(255, 99, 132, 0.5)',
-                'rgba(54, 162, 235, 0.5)',
-                'rgba(255, 206, 86, 0.5)',
-                'rgba(75, 192, 192, 0.5)',
-              ],
-              borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-              ],
-              borderWidth: 1
-            }]
-          },
-          options: defaultOptions
-        };
-
-      case 'demographics':
         return {
           data: {
             labels: currentData.map(item => `${item.age_group} (${item.country})`),
@@ -619,7 +781,236 @@ function Analytics() {
               }
             ]
           },
-          options: defaultOptions
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  padding: 20,
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              title: {
+                display: true,
+                text: getChartTitle(),
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: 20
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    size: 12
+                  },
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            }
+          }
+        };
+
+      case 'bus-routes':
+        if (!currentData) return null;
+
+        return {
+          data: {
+            labels: currentData.line_popularity.map(route => `Line ${route.line}`),
+            datasets: [
+              {
+                label: 'Total Trips',
+                data: currentData.line_popularity.map(route => route.total_trips),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+              },
+              {
+                label: 'Unique Users',
+                data: currentData.line_popularity.map(route => route.unique_users),
+                backgroundColor: 'rgba(255, 206, 86, 0.5)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 1
+              },
+              {
+                label: 'Stops Used',
+                data: currentData.line_popularity.map(route => route.stops_used),
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  padding: 20,
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              title: {
+                display: true,
+                text: 'Bus Line Popularity Statistics',
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                }
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              },
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        };
+
+      case 'popular-stops':
+        return {
+          data: {
+            labels: currentData.map(stop => stop.stop_name),
+            datasets: [{
+              label: 'Usage Count',
+              data: currentData.map(stop => stop.usage_count),
+              backgroundColor: 'rgba(26, 115, 232, 0.5)',
+              borderColor: 'rgba(26, 115, 232, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  padding: 20,
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              title: {
+                display: true,
+                text: 'Most Frequently Used Bus Stops',
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    size: 12
+                  },
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            }
+          }
+        };
+
+      case 'geographic-distribution':
+        return {
+          data: {
+            labels: Object.keys(currentData || {}),
+            datasets: [{
+              data: Object.values(currentData || {}),
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.5)',
+              ],
+              borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  padding: 20,
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              title: {
+                display: true,
+                text: 'User Geographic Distribution',
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    size: 12
+                  },
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            }
+          }
         };
 
       default:
@@ -686,9 +1077,223 @@ function Analytics() {
     });
   };
 
+  const createNumberedStopIcon = (number) => {
+    return L.divIcon({
+      className: 'custom-numbered-stop',
+      html: `<div style="
+        background-color: #FFA500;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      ">${number}</div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor: [0, -12],
+    });
+  };
+
   const renderContent = () => {
     if (isLoading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
+
+    if (activeSubTab === 'demographics') {
+      const chartData = getChartData();
+      if (!chartData) return <div>No demographic data available</div>;
+
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ height: '400px', padding: '20px' }}>
+            <h3 style={{ textAlign: 'center', color: '#1a73e8', marginBottom: '20px' }}>
+              Age Demographics - Reviews
+            </h3>
+            <Bar
+              data={chartData.ageReviewsData}
+              options={chartData.options}
+            />
+          </div>
+
+          <div style={{ height: '400px', padding: '20px' }}>
+            <h3 style={{ textAlign: 'center', color: '#1a73e8', marginBottom: '20px' }}>
+              Age Demographics - Bus Usage
+            </h3>
+            <Bar
+              data={chartData.ageBusData}
+              options={chartData.options}
+            />
+          </div>
+
+          <div style={{ height: '400px', padding: '20px' }}>
+            <h3 style={{ textAlign: 'center', color: '#1a73e8', marginBottom: '20px' }}>
+              Country Demographics - Reviews
+            </h3>
+            <Bar
+              data={chartData.countryReviewsData}
+              options={chartData.options}
+            />
+          </div>
+
+          <div style={{ height: '400px', padding: '20px' }}>
+            <h3 style={{ textAlign: 'center', color: '#1a73e8', marginBottom: '20px' }}>
+              Country Demographics - Bus Usage
+            </h3>
+            <Bar
+              data={chartData.countryBusData}
+              options={chartData.options}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (activeSubTab === 'bus-routes') {
+      const currentData = data[activeSubTab];
+      if (!currentData) {
+        return <div>No bus route data available</div>;
+      }
+
+      // Create a second chart for frequent routes
+      const frequentRoutesData = {
+        labels: currentData.frequent_routes.map(route => `Line ${route.line}\n${route.stop_name}`),
+        datasets: [
+          {
+            label: 'Trip Count',
+            data: currentData.frequent_routes.map(route => route.trip_count),
+            backgroundColor: 'rgba(153, 102, 255, 0.5)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Unique Users',
+            data: currentData.frequent_routes.map(route => route.unique_users),
+            backgroundColor: 'rgba(255, 159, 64, 0.5)',
+            borderColor: 'rgba(255, 159, 64, 1)',
+            borderWidth: 1
+          }
+        ]
+      };
+
+      const linePopularityData = {
+        labels: currentData.line_popularity.map(route => `Line ${route.line}`),
+        datasets: [
+          {
+            label: 'Total Trips',
+            data: currentData.line_popularity.map(route => route.total_trips),
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Unique Users',
+            data: currentData.line_popularity.map(route => route.unique_users),
+            backgroundColor: 'rgba(255, 206, 86, 0.5)',
+            borderColor: 'rgba(255, 206, 86, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Stops Used',
+            data: currentData.line_popularity.map(route => route.stops_used),
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }
+        ]
+      };
+
+      const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: true,
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45
+            }
+          },
+          y: {
+            beginAtZero: true
+          }
+        }
+      };
+
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ height: '400px', padding: '20px' }}>
+            <h3 style={{ textAlign: 'center', color: '#1a73e8', marginBottom: '20px' }}>
+              Line Popularity Overview
+            </h3>
+            <Bar
+              data={linePopularityData}
+              options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  title: {
+                    ...chartOptions.plugins.title,
+                    text: 'Bus Line Usage Statistics'
+                  }
+                }
+              }}
+            />
+          </div>
+
+          <div style={{ height: '400px', padding: '20px' }}>
+            <h3 style={{ textAlign: 'center', color: '#1a73e8', marginBottom: '20px' }}>
+              Frequent Routes by Stop
+            </h3>
+            <Bar
+              data={frequentRoutesData}
+              options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  title: {
+                    ...chartOptions.plugins.title,
+                    text: 'Most Frequent Routes by Stop'
+                  }
+                }
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Add specific handling for demographics tab
+    if (activeSubTab === 'demographics') {
+      const chartData = getChartData();
+      if (!chartData) {
+        return <div>No demographic data available</div>;
+      }
+      return (
+        <div style={{ height: '400px', padding: '20px' }}>
+          <Bar
+            ref={chartRef}
+            data={chartData.data}
+            options={chartData.options}
+          />
+        </div>
+      );
+    }
 
     switch (activeSubTab) {
       case 'attractions':
@@ -758,7 +1363,62 @@ function Analytics() {
           </div>
         );
 
-      // ... other cases remain the same ...
+      case 'popular-stops':
+        return (
+          <div style={{ height: 'calc(100vh - 200px)', width: '100%' }}>
+            <MapContainer
+              center={[34.0522, -118.2437]} // Los Angeles center
+              zoom={10}
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              {data['popular-stops']?.map((stop, index) => (
+                <Marker
+                  key={index}
+                  position={[stop.latitude, stop.longitude]}
+                  icon={createNumberedStopIcon(index + 1)}
+                >
+                  <Popup>
+                    <div style={{
+                      padding: '8px',
+                      minWidth: '200px'
+                    }}>
+                      <h3 style={{
+                        margin: '0 0 8px 0',
+                        color: '#1a73e8',
+                        fontSize: '16px',
+                        borderBottom: '1px solid #eee',
+                        paddingBottom: '8px'
+                      }}>
+                        {index + 1}. {stop.stop_name}
+                      </h3>
+                      <div style={{
+                        fontSize: '13px',
+                        color: '#5f6368',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px'
+                      }}>
+                        <div>🚌 Line: {stop.line}</div>
+                        <div>👥 Users: {stop.unique_users}</div>
+                        <div>📊 Usage Count: {stop.usage_count}</div>
+                        <div style={{ fontSize: '12px', color: '#80868b', marginTop: '4px' }}>
+                          📍 {stop.latitude.toFixed(6)}, {stop.longitude.toFixed(6)}
+                        </div>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
@@ -782,7 +1442,45 @@ function Analytics() {
         >
           Top Attractions
         </button>
-        {/* ... other tab buttons ... */}
+        <button
+          onClick={() => setActiveSubTab('demographics')}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: activeSubTab === 'demographics' ? '#1a73e8' : '#fff',
+            color: activeSubTab === 'demographics' ? '#fff' : '#1a73e8',
+            border: '1px solid #1a73e8',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Demographics
+        </button>
+        <button
+          onClick={() => setActiveSubTab('bus-routes')}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: activeSubTab === 'bus-routes' ? '#1a73e8' : '#fff',
+            color: activeSubTab === 'bus-routes' ? '#fff' : '#1a73e8',
+            border: '1px solid #1a73e8',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Bus Routes
+        </button>
+        <button
+          onClick={() => setActiveSubTab('popular-stops')}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: activeSubTab === 'popular-stops' ? '#1a73e8' : '#fff',
+            color: activeSubTab === 'popular-stops' ? '#fff' : '#1a73e8',
+            border: '1px solid #1a73e8',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Popular Stops
+        </button>
       </div>
 
       {renderContent()}
@@ -803,6 +1501,8 @@ function App() {
   const [busRoute, setBusRoute] = useState(null);
   const [attractionPlan, setAttractionPlan] = useState(null);
   const [activeTab, setActiveTab] = useState('map');
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState(null);
 
   const handleLocationSelect = (coords) => {
     setSelectedLocation(coords);
@@ -1322,6 +2022,32 @@ function App() {
                             📌 {searchResults[index].latitude.toFixed(6)}, {searchResults[index].longitude.toFixed(6)}
                           </p>
                         )}
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent the popup from closing
+                            setSelectedPlace(searchResults[index]);
+                            setIsReviewModalOpen(true);
+                          }}
+                          style={{
+                            backgroundColor: '#1a73e8',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '8px 16px',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            marginTop: '12px',
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                          }}
+                        >
+                          <span style={{ fontSize: '16px' }}>⭐</span>
+                          Write Review
+                        </button>
                       </div>
                     </div>
                   </Popup>
@@ -1448,10 +2174,15 @@ function App() {
                     <>
                       <div style={{ marginBottom: '12px', color: '#5f6368', fontSize: '14px' }}>
                         Total Duration: {(() => {
-                          const hours = parseFloat(attractionPlan.total_duration.split(' ')[0]);
-                          const fullHours = Math.floor(hours);
-                          const minutes = Math.round((hours - fullHours) * 60);
-                          return `${fullHours}h ${minutes}m`;
+                          if (!attractionPlan.total_duration) return 'N/A';
+                          try {
+                            const hours = parseFloat(attractionPlan.total_duration.split(' ')[0]) || 0;
+                            const fullHours = Math.floor(hours);
+                            const minutes = Math.round((hours - fullHours) * 60);
+                            return `${fullHours}h ${minutes}m`;
+                          } catch (e) {
+                            return 'N/A';
+                          }
                         })()}
                       </div>
                       {attractionPlan.itinerary.map((item, index) => (
@@ -1477,18 +2208,23 @@ function App() {
                             flexDirection: 'column',
                             gap: '4px'
                           }}>
-                            <div>⏰ {item.start_time} - {item.end_time}</div>
+                            <div>⏰ {item.start_time || 'N/A'} - {item.end_time || 'N/A'}</div>
                             <div>⌛ Duration: {(() => {
-                              const hours = parseFloat(item.suggested_duration.split(' ')[0]);
-                              const fullHours = Math.floor(hours);
-                              const minutes = Math.round((hours - fullHours) * 60);
-                              return fullHours > 0
-                                ? minutes > 0
-                                  ? `${fullHours}h ${minutes}m`
-                                  : `${fullHours}h`
-                                : `${minutes}m`;
+                              if (!item.suggested_duration) return 'N/A';
+                              try {
+                                const hours = parseFloat(item.suggested_duration.split(' ')[0]) || 0;
+                                const fullHours = Math.floor(hours);
+                                const minutes = Math.round((hours - fullHours) * 60);
+                                return fullHours > 0
+                                  ? minutes > 0
+                                    ? `${fullHours}h ${minutes}m`
+                                    : `${fullHours}h`
+                                  : `${minutes}m`;
+                              } catch (e) {
+                                return 'N/A';
+                              }
                             })()}</div>
-                            <div>📍 Distance: {item.place.distance_from_start.toFixed(2)} miles</div>
+                            <div>📍 Distance: {item.place.distance_from_start?.toFixed(2) || 'N/A'} miles</div>
                             {item.place.address && <div>🏠 {item.place.address}</div>}
                             {item.place.description && <div>ℹ️ {item.place.description}</div>}
                           </div>
@@ -1577,6 +2313,11 @@ function App() {
           }
         `}
       </style>
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        place={selectedPlace}
+      />
     </div>
   );
 }

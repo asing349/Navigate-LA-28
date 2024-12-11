@@ -127,6 +127,9 @@ class AnalyticsService:
 
     async def _load_data(self):
         """Load data from database into Spark DataFrames"""
+        # Initialize Spark session first
+        self.spark = self._get_spark()
+
         # Define schemas
         user_schema = StructType(
             [
@@ -234,41 +237,72 @@ class AnalyticsService:
             .otherwise("55+"),
         )
 
-        # Reviews by demographics
-        reviews_by_demo = (
+        # Age-based analysis
+        age_reviews = (
             users_with_age.join(
                 self.reviews_df, users_with_age.id == self.reviews_df.user_id, "left"
             )
-            .groupBy("age_group", "country")
+            .groupBy("age_group")
             .agg(
-                count(col("rating")).alias("total_reviews"),
+                count("rating").alias("total_reviews"),
                 round(avg("rating"), 2).alias("avg_rating"),
-                countDistinct("place_id").alias("unique_places_reviewed"),
+                countDistinct("user_id").alias("active_reviewers"),
             )
+            .filter(col("total_reviews") > 0)
             .orderBy(desc("total_reviews"))
         )
 
-        # Bus usage by demographics
-        bus_usage_by_demo = (
+        age_bus_usage = (
             users_with_age.join(
-                self.bus_route_usage_df.select(
-                    col("id").alias("bus_usage_id"),
-                    col("user_id"),
-                    col("origin_stop_id"),
-                    col("destination_stop_id"),
-                ),
-                users_with_age.id == col("user_id"),
+                self.bus_route_usage_df,
+                users_with_age.id == self.bus_route_usage_df.user_id,
                 "left",
             )
-            .groupBy("age_group", "country")
+            .groupBy("age_group")
             .agg(
-                count("bus_usage_id").alias("total_bus_trips"),
-                countDistinct("user_id").alias("active_users"),
+                count("*").alias("total_trips"),
+                countDistinct("user_id").alias("active_riders"),
+                round(count("*") / countDistinct("user_id"), 1).alias("trips_per_user"),
             )
-            .orderBy(desc("total_bus_trips"))
+            .filter(col("active_riders") > 0)
+            .orderBy(desc("total_trips"))
         )
 
-        return reviews_by_demo, bus_usage_by_demo
+        # Country-based analysis
+        country_reviews = (
+            self.users_df.join(
+                self.reviews_df, self.users_df.id == self.reviews_df.user_id, "left"
+            )
+            .groupBy("country")
+            .agg(
+                count("rating").alias("total_reviews"),
+                round(avg("rating"), 2).alias("avg_rating"),
+                countDistinct("user_id").alias("active_reviewers"),
+            )
+            .filter(col("total_reviews") > 0)
+            .orderBy(desc("total_reviews"))
+        )
+
+        country_bus_usage = (
+            self.users_df.join(
+                self.bus_route_usage_df,
+                self.users_df.id == self.bus_route_usage_df.user_id,
+                "left",
+            )
+            .groupBy("country")
+            .agg(
+                count("*").alias("total_trips"),
+                countDistinct("user_id").alias("active_riders"),
+                round(count("*") / countDistinct("user_id"), 1).alias("trips_per_user"),
+            )
+            .filter(col("active_riders") > 0)
+            .orderBy(desc("total_trips"))
+        )
+
+        return {
+            "age": {"reviews": age_reviews, "bus_usage": age_bus_usage},
+            "country": {"reviews": country_reviews, "bus_usage": country_bus_usage},
+        }
 
     def analyze_bus_patterns(self):
         """Analyze bus usage patterns"""
@@ -377,12 +411,25 @@ class AnalyticsService:
         try:
             self.spark = self._get_spark()
             await self._load_data()
-            reviews_demo, bus_usage_demo = self.analyze_user_demographics()
+            demographics = self.analyze_user_demographics()
+
             return {
-                "reviews": self._convert_to_json_serializable(reviews_demo.toPandas()),
-                "bus_usage": self._convert_to_json_serializable(
-                    bus_usage_demo.toPandas()
-                ),
+                "age": {
+                    "reviews": self._convert_to_json_serializable(
+                        demographics["age"]["reviews"].toPandas()
+                    ),
+                    "bus_usage": self._convert_to_json_serializable(
+                        demographics["age"]["bus_usage"].toPandas()
+                    ),
+                },
+                "country": {
+                    "reviews": self._convert_to_json_serializable(
+                        demographics["country"]["reviews"].toPandas()
+                    ),
+                    "bus_usage": self._convert_to_json_serializable(
+                        demographics["country"]["bus_usage"].toPandas()
+                    ),
+                },
             }
         finally:
             if self.spark:

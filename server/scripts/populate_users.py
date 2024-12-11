@@ -11,6 +11,30 @@ from models.user import User as UserModel
 # Create a Faker instance
 faker = Faker()
 
+# Add this list of 20 countries after the faker instance
+COUNTRIES = [
+    "United States",
+    "Canada",
+    "Mexico",
+    "United Kingdom",
+    "France",
+    "Germany",
+    "Spain",
+    "Italy",
+    "Japan",
+    "China",
+    "Australia",
+    "Brazil",
+    "India",
+    "Russia",
+    "South Korea",
+    "Netherlands",
+    "Sweden",
+    "Singapore",
+    "New Zealand",
+    "Ireland",
+]
+
 
 async def fetch_existing_usernames(db: AsyncSession):
     """
@@ -29,7 +53,7 @@ async def fetch_existing_usernames(db: AsyncSession):
         raise Exception(f"Error fetching existing usernames: {str(e)}")
 
 
-async def create_random_users(db: AsyncSession, num_users: int = 1000):
+async def create_random_users(db: AsyncSession, num_users: int = 200):
     """
     Populate the database with random user data, ensuring unique usernames.
     """
@@ -50,7 +74,7 @@ async def create_random_users(db: AsyncSession, num_users: int = 1000):
 
             # Generate random user data
             dob = faker.date_of_birth(minimum_age=18, maximum_age=70)
-            country = faker.country()
+            country = faker.random_element(COUNTRIES)
             password = "password123"  # Simple password for test users
             hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
 
@@ -86,7 +110,7 @@ async def main():
     try:
         async with AsyncSessionFactory() as db:
             print("Starting user creation process...")
-            await create_random_users(db, num_users=1000)
+            await create_random_users(db, num_users=200)
     except Exception as e:
         print(f"Main function error: {str(e)}")
 

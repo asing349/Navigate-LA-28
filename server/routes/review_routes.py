@@ -7,9 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # Import schemas for request and response validation
 from schemas.review import ReviewCreate, Review, ReviewUpdate
+
 # Import service functions for review operations
 from services.review_service import create_review, get_review, update_review, delete_review
 # Import database dependency for session management
+
 from config.database import get_db
 
 # Create an APIRouter instance for review routes
@@ -78,6 +80,8 @@ async def read_review_route(
                 detail=detail,  # Error message for missing review
             )
         return review  # Return the retrieved review
+                status_code=status.HTTP_404_NOT_FOUND, detail="Review not found"
+            )
     except HTTPException as e:
         # Rethrow known HTTP exceptions
         raise e

@@ -37,6 +37,7 @@ def init_models():
         back_populates="user",  # Corresponding field in CustomerUsage
         cascade="all, delete-orphan",  # Automatically handle deletions
         lazy="dynamic",  # Load data lazily when accessed
+
     )
 
     # Define relationship between User and Review
@@ -45,6 +46,7 @@ def init_models():
         back_populates="user",  # Corresponding field in Review
         cascade="all, delete-orphan",  # Automatically handle deletions
         lazy="dynamic",  # Load data lazily when accessed
+
     )
 
     # Define relationship between User and BusRouteUsage
@@ -53,6 +55,7 @@ def init_models():
         back_populates="user",  # Corresponding field in BusRouteUsage
         cascade="all, delete-orphan",  # Automatically handle deletions
         lazy="dynamic",  # Load data lazily when accessed
+
     )
 
 
