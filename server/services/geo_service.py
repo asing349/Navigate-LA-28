@@ -1,19 +1,26 @@
-# server/services/review_service.py
-from typing import Any, Dict, List
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import and_, func
-from math import radians, sin, cos, sqrt, atan2
-from datetime import datetime, timedelta
-import random
+# server/services/geo_service.py
 
-from models.review import Review as ReviewModel
+from typing import Any, Dict, List  # For type hinting
+# For asynchronous database session management
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select  # For constructing SQL queries
+# For handling SQLAlchemy-specific errors
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import and_, func  # For building SQL conditions
+from math import radians, sin, cos, sqrt, atan2  # For Haversine formula
+from datetime import datetime, timedelta  # For date and time manipulation
+import random  # For generating random durations and weights
+
+from models.review import Review as ReviewModel  # Review model from the database
+# Schemas for creating and updating reviews
 from schemas.review import ReviewCreate, ReviewUpdate
+# Function to find nearby places
 from services.nearest_places import find_nearest_places
+# Function to find nearby restrooms
 from services.nearest_restrooms import find_nearest_restrooms
-from schemas.place import Place
-from models.place import Place as PlaceModel
+from schemas.place import Place  # Place schema
+from models.place import Place as PlaceModel  # Place model from the database
+# Function to find bus routes
 from services.nearest_bustops import find_direct_bus_lines
 
 
@@ -21,9 +28,19 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     """
     Calculate the distance between two points on Earth using the Haversine formula.
     Returns distance in miles.
+
+    Args:
+        lat1 (float): Latitude of the first point.
+        lon1 (float): Longitude of the first point.
+        lat2 (float): Latitude of the second point.
+        lon2 (float): Longitude of the second point.
+
+    Returns:
+        float: Distance between the two points in miles.
     """
     R = 3959  # Earth's radius in miles
 
+    # Convert degrees to radians
     lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
 
     dlat = lat2 - lat1
@@ -37,6 +54,17 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
 
 
 async def nearest_places(db: AsyncSession, lat: float, long: float) -> List[Place]:
+    """
+    Find the nearest places to the specified location.
+
+    Args:
+        db (AsyncSession): Database session.
+        lat (float): Latitude of the location.
+        long (float): Longitude of the location.
+
+    Returns:
+        List[Place]: List of nearest places sorted by distance.
+    """
     # Get nearest places from Spark
     spark_places = find_nearest_places(lat, long, 10)
 
@@ -77,6 +105,17 @@ async def nearest_places(db: AsyncSession, lat: float, long: float) -> List[Plac
 
 
 async def nearest_restrooms(db: AsyncSession, lat: float, long: float) -> List[Place]:
+    """
+    Find the nearest restrooms to the specified location.
+
+    Args:
+        db (AsyncSession): Database session.
+        lat (float): Latitude of the location.
+        long (float): Longitude of the location.
+
+    Returns:
+        List[Place]: List of nearest restrooms sorted by distance.
+    """
     # Get nearest restrooms from Spark
     spark_restrooms = find_nearest_restrooms(lat, long, 10)
 
@@ -124,6 +163,20 @@ async def direct_bus_routes(
     long2: float,
     buffer_radius: float = 0.5,
 ) -> Dict[str, Any]:
+    """
+    Find the best direct bus route between two locations.
+
+    Args:
+        db (AsyncSession): Database session.
+        lat1 (float): Latitude of the starting location.
+        long1 (float): Longitude of the starting location.
+        lat2 (float): Latitude of the destination location.
+        long2 (float): Longitude of the destination location.
+        buffer_radius (float): Buffer radius in miles for searching bus stops.
+
+    Returns:
+        Dict[str, Any]: Information about the bus route, or a message if no route is found.
+    """
     try:
         # Get best bus route from Spark
         route_data = await find_direct_bus_lines(
@@ -153,18 +206,17 @@ async def create_attraction_visit_plan(
     visit_duration_hours: float | None = None,
 ) -> Dict[str, Any]:
     """
-    Creates a plan to visit nearby attractions.
+    Create a plan to visit nearby attractions.
 
     Args:
-        db: Database session
-        lat: Starting latitude
-        long: Starting longitude
-        max_places: Maximum number of places to include in plan
-        visit_duration_hours: Optional total duration of the visit in hours.
-                            If None, duration will be calculated based on number of places.
+        db (AsyncSession): Database session.
+        lat (float): Starting latitude.
+        long (float): Starting longitude.
+        max_places (int): Maximum number of places to include in the plan.
+        visit_duration_hours (float | None): Total duration of the visit in hours. If None, duration is calculated.
 
     Returns:
-        Dictionary containing the visit plan with suggested order and timing
+        Dict[str, Any]: A dictionary containing the visit plan with suggested order and timing.
     """
     # Get nearby places
     places = await nearest_places(db, lat, long)
@@ -175,9 +227,9 @@ async def create_attraction_visit_plan(
     # Limit number of places
     places = places[:max_places]
 
-    # If no duration specified, calculate based on number of places
-    # Assuming average 1-2 hours per attraction
+    # Calculate duration if not specified
     if visit_duration_hours is None:
+        # Average 1-2 hours per attraction
         visit_duration_hours = len(places) * random.uniform(1.0, 2.0)
 
     # Generate random weights for each place
@@ -187,8 +239,8 @@ async def create_attraction_visit_plan(
     # Normalize weights to match total duration
     visit_times = [w * visit_duration_hours / total_weights for w in weights]
 
-    # Create itinerary
-    current_time = datetime.now().replace(hour=9, minute=0)  # Start at 9 AM
+    # Create itinerary starting at 9 AM
+    current_time = datetime.now().replace(hour=9, minute=0)
     itinerary = []
 
     for place, duration in zip(places, visit_times):
@@ -211,7 +263,7 @@ async def create_attraction_visit_plan(
 
     return {
         "total_attractions": len(places),
-        "total_duration": f"{visit_duration_hours} hours",
+        "total_duration": f"{visit_duration_hours:.1f} hours",
         "start_location": {"latitude": lat, "longitude": long},
         "itinerary": itinerary,
     }

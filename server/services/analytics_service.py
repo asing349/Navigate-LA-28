@@ -1,42 +1,43 @@
-from pyspark.sql import SparkSession, Window
-from pyspark.sql.functions import (
-    avg,
-    count,
-    desc,
-    dense_rank,
-    col,
-    round,
-    year,
-    current_date,
-    when,
-    sum,
-    size,
-    countDistinct,
-)
-from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
-    IntegerType,
-    TimestampType,
-    FloatType,
-)
-import pandas as pd
-import asyncio
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from yarl import URL as MultiHostUrl
-import os
-from dotenv import load_dotenv
-import logging
+# server/services/analytics_service.py
 
-# Setup logging and environment variables
+# For Spark session management and window functions
+from pyspark.sql import SparkSession, Window
+from pyspark.sql.functions import (  # Common SQL functions used in Spark
+    avg, count, desc, dense_rank, col, round, year, current_date, when,
+    sum, size, countDistinct
+)
+from pyspark.sql.types import (  # For defining Spark DataFrame schemas
+    StructType, StructField, StringType, IntegerType, TimestampType, FloatType
+)
+import pandas as pd  # For handling dataframes
+import asyncio  # For asynchronous programming
+from sqlalchemy import text  # For raw SQL queries
+# For async database interactions
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from yarl import URL as MultiHostUrl  # For handling multi-host URLs
+import os  # For accessing environment variables
+from dotenv import load_dotenv  # For loading environment variables from a .env file
+import logging  # For logging messages
+
+# Load environment variables from .env file
 load_dotenv()
+
+# Set up logging configuration
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class DatabaseConfig:
+    """
+    Configuration class for the PostgreSQL database.
+
+    Attributes:
+        POSTGRES_USER (str): Database username.
+        POSTGRES_PASSWORD (str): Database password.
+        POSTGRES_HOST (str): Database host.
+        POSTGRES_PORT (str): Database port.
+        POSTGRES_DB (str): Name of the database.
+    """
     POSTGRES_USER = os.getenv("POSTGRES_USER", "la28_user")
     POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "bigdata_la28")
     POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
@@ -45,9 +46,11 @@ class DatabaseConfig:
 
     @property
     def database_url(self) -> str:
+        """
+        Construct the database connection URL.
+        """
         logger.info(
-            f"Attempting to connect to: {self.POSTGRES_HOST}:{self.POSTGRES_PORT}"
-        )
+            f"Attempting to connect to: {self.POSTGRES_HOST}:{self.POSTGRES_PORT}")
         return str(
             MultiHostUrl.build(
                 scheme="postgresql+asyncpg",
@@ -55,7 +58,7 @@ class DatabaseConfig:
                 password=self.POSTGRES_PASSWORD,
                 host=self.POSTGRES_HOST,
                 port=int(self.POSTGRES_PORT),
-                path=f"/{self.POSTGRES_DB}",
+                path=f"/{self.POSTGRES_DB}"
             )
         )
 
@@ -122,7 +125,8 @@ class AnalyticsService:
                 result = await session.execute(query)
                 return pd.DataFrame(result.fetchall(), columns=result.keys())
             except Exception as e:
-                logger.error(f"Error fetching data from {table_name}: {str(e)}")
+                logger.error(
+                    f"Error fetching data from {table_name}: {str(e)}")
                 raise
 
     async def _load_data(self):
@@ -192,12 +196,15 @@ class AnalyticsService:
 
         # Create Spark DataFrames with explicit schemas
         self.users_df = self.spark.createDataFrame(data[0], schema=user_schema)
-        self.reviews_df = self.spark.createDataFrame(data[1], schema=review_schema)
+        self.reviews_df = self.spark.createDataFrame(
+            data[1], schema=review_schema)
         self.bus_route_usage_df = self.spark.createDataFrame(
             data[2], schema=bus_route_usage_schema
         )
-        self.bus_stops_df = self.spark.createDataFrame(data[3], schema=bus_stop_schema)
-        self.places_df = self.spark.createDataFrame(data[4], schema=place_schema)
+        self.bus_stops_df = self.spark.createDataFrame(
+            data[3], schema=bus_stop_schema)
+        self.places_df = self.spark.createDataFrame(
+            data[4], schema=place_schema)
 
         # Cache DataFrames
         self.users_df.cache()
@@ -262,7 +269,8 @@ class AnalyticsService:
             .agg(
                 count("*").alias("total_trips"),
                 countDistinct("user_id").alias("active_riders"),
-                round(count("*") / countDistinct("user_id"), 1).alias("trips_per_user"),
+                round(count("*") / countDistinct("user_id"),
+                      1).alias("trips_per_user"),
             )
             .filter(col("active_riders") > 0)
             .orderBy(desc("total_trips"))
@@ -293,7 +301,8 @@ class AnalyticsService:
             .agg(
                 count("*").alias("total_trips"),
                 countDistinct("user_id").alias("active_riders"),
-                round(count("*") / countDistinct("user_id"), 1).alias("trips_per_user"),
+                round(count("*") / countDistinct("user_id"),
+                      1).alias("trips_per_user"),
             )
             .filter(col("active_riders") > 0)
             .orderBy(desc("total_trips"))
@@ -314,7 +323,8 @@ class AnalyticsService:
             )
             .join(
                 self.bus_stops_df.alias("destination"),
-                self.bus_route_usage_df.destination_stop_id == col("destination.id"),
+                self.bus_route_usage_df.destination_stop_id == col(
+                    "destination.id"),
             )
             .groupBy("origin.line", "origin.stop_name", "destination.stop_name")
             .agg(
@@ -354,7 +364,8 @@ class AnalyticsService:
             )
             .groupBy("country")
             .agg(
-                countDistinct(col("id")).alias("user_count"),  # Count distinct users
+                countDistinct(col("id")).alias(
+                    "user_count"),  # Count distinct users
                 countDistinct(col("review_id")).alias(
                     "active_users"
                 ),  # Count distinct reviews
@@ -444,7 +455,8 @@ class AnalyticsService:
             frequent_routes, line_popularity = self.analyze_bus_patterns()
 
             if min_trips:
-                frequent_routes = frequent_routes.filter(col("trip_count") >= min_trips)
+                frequent_routes = frequent_routes.filter(
+                    col("trip_count") >= min_trips)
                 line_popularity = line_popularity.filter(
                     col("total_trips") >= min_trips
                 )
@@ -470,7 +482,8 @@ class AnalyticsService:
             _, popular_stops = self.analyze_geographic_distribution()
 
             if min_usage:
-                popular_stops = popular_stops.filter(col("usage_count") >= min_usage)
+                popular_stops = popular_stops.filter(
+                    col("usage_count") >= min_usage)
             if line:
                 popular_stops = popular_stops.filter(col("line") == line)
 

@@ -1,155 +1,167 @@
+# docker-compose.yml
+
 services:
+  # Frontend service for the Navigate LA application
   client:
-    container_name: navigate_la_frontend
-    image: node:18
-    working_dir: /app
+    container_name: navigate_la_frontend  # Name of the frontend container
+    image: node:18  # Node.js version 18 as the base image
+    working_dir: /app  # Working directory inside the container
     ports:
-      - "3030:3030"
+      - "3030:3030"  # Map port 3030 on the host to port 3030 in the container
     volumes:
-      - ./client:/app
-    command: >
+      - ./client:/app  # Mount the local client directory into the container
+    command: >  # Command to execute inside the container
       bash -c "npm install &&
                npm install --save react-app-rewired crypto-browserify stream-browserify os-browserify path-browserify &&
                npm run start"
     depends_on:
-      - server
+      - server  # Ensure the server service is running before starting the frontend
     networks:
-      - navigate_la_28
+      - navigate_la_28  # Attach to the navigate_la_28 network
     environment:
-      - WATCHPACK_POLLING=true
-      - WDS_SOCKET_PORT=3030
+      - WATCHPACK_POLLING=true  # Enable polling for file changes in development
+      - WDS_SOCKET_PORT=3030  # Webpack DevServer socket port
 
+  # Backend service for the Navigate LA application
   server:
-    container_name: navigate_la_backend
-    build: ./server
+    container_name: navigate_la_backend  # Name of the backend container
+    build: ./server  # Build the image from the server directory
     ports:
-      - "8000:8000"
+      - "8000:8000"  # Map port 8000 on the host to port 8000 in the container
     volumes:
-      - ./server:/app
-      - ./server/datasets:/app/datasets
+      - ./server:/app  # Mount the local server directory into the container
+      - ./server/datasets:/app/datasets  # Mount the datasets directory
     environment:
-      - PYTHONPATH=/app
+      - PYTHONPATH=/app  # Set the Python path inside the container
     networks:
-      - navigate_la_28
+      - navigate_la_28  # Attach to the navigate_la_28 network
     depends_on:
-      - postgres
-      - postgres_test
-    command: >
+      - postgres  # Ensure the main Postgres service is running
+      - postgres_test  # Ensure the test Postgres service is running
+    command: >  # Command to execute inside the container
       bash -c "
         python models/init_db.py &&
         uvicorn main:app --host 0.0.0.0 --port 8000 --reload
       "
 
+  # Hadoop NameNode service for HDFS
   hadoop:
-    container_name: hadoop
-    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop  # Name of the Hadoop NameNode container
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8  # Hadoop image
     environment:
-      - CLUSTER_NAME=test
+      - CLUSTER_NAME=test  # Name of the Hadoop cluster
     ports:
-      - "9870:9870"
-      - "9000:9000"
+      - "9870:9870"  # Web UI port for the NameNode
+      - "9000:9000"  # Default FS port
     volumes:
-      - hadoop_namenode:/hadoop/dfs/name
-      - ./hadoop/conf:/opt/hadoop-3.2.1/etc/hadoop
+      - hadoop_namenode:/hadoop/dfs/name  # Persist NameNode data
+      - ./hadoop/conf:/opt/hadoop-3.2.1/etc/hadoop  # Mount custom Hadoop configuration
     networks:
-      - navigate_la_28
+      - navigate_la_28  # Attach to the navigate_la_28 network
 
+  # Spark Master node service
   spark:
-    container_name: spark_master
+    container_name: spark_master  # Name of the Spark Master container
     build:
-      context: ./spark
-      dockerfile: Dockerfile
+      context: ./spark  # Build the image from the spark directory
+      dockerfile: Dockerfile  # Specify the Dockerfile
     environment:
-      - SPARK_MODE=master
-      - SPARK_MASTER_HOST=spark
-      - SPARK_LOCAL_IP=spark
-      - SPARK_MASTER_PORT=7077
-      - SPARK_MASTER_WEBUI_PORT=8080
-      - HADOOP_USER_NAME=root
-      - SPARK_USER=root
+      - SPARK_MODE=master  # Set the Spark mode to master
+      - SPARK_MASTER_HOST=spark  # Set the Spark master host name
+      - SPARK_LOCAL_IP=spark  # Set the local IP for Spark
+      - SPARK_MASTER_PORT=7077  # Port for Spark master
+      - SPARK_MASTER_WEBUI_PORT=8080  # Web UI port for Spark master
+      - HADOOP_USER_NAME=root  # User for Hadoop integration
+      - SPARK_USER=root  # User for Spark
     ports:
-      - "7077:7077"
-      - "8080:8080"
+      - "7077:7077"  # Spark master communication port
+      - "8080:8080"  # Spark master Web UI port
     volumes:
-      - ./spark/conf:/opt/bitnami/spark/conf
+      - ./spark/conf:/opt/bitnami/spark/conf  # Mount custom Spark configuration
     networks:
-      - navigate_la_28
-    command: >
+      - navigate_la_28  # Attach to the navigate_la_28 network
+    command: >  # Command to start Spark Master
       bash -c "
         /opt/bitnami/spark/sbin/start-master.sh &&
         tail -f /opt/bitnami/spark/logs/spark-*.out
       "
 
+  # Spark Worker node service
   spark-worker:
-    container_name: spark_worker
-    image: bitnami/spark:3.3.0
+    container_name: spark_worker  # Name of the Spark Worker container
+    image: bitnami/spark:3.3.0  # Spark Worker image
     environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark:7077
-      - SPARK_WORKER_WEBUI_PORT=8081
-      - SPARK_WORKER_PORT=8082
-      - SPARK_WORKER_HOST=spark-worker
-      - HADOOP_USER_NAME=root
-      - SPARK_USER=root
+      - SPARK_MODE=worker  # Set the Spark mode to worker
+      - SPARK_MASTER_URL=spark://spark:7077  # URL of the Spark master
+      - SPARK_WORKER_WEBUI_PORT=8081  # Web UI port for Spark worker
+      - SPARK_WORKER_PORT=8082  # Communication port for Spark worker
+      - SPARK_WORKER_HOST=spark-worker  # Host name for the worker
+      - HADOOP_USER_NAME=root  # User for Hadoop integration
+      - SPARK_USER=root  # User for Spark
     depends_on:
-      - spark
+      - spark  # Ensure the Spark master is running
     networks:
-      - navigate_la_28
+      - navigate_la_28  # Attach to the navigate_la_28 network
     ports:
-      - "8081:8081"
-    command: >
+      - "8081:8081"  # Map the Spark worker Web UI port
+    command: >  # Command to start Spark Worker
       bash -c "
         /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark:7077
       "
 
+  # Main PostgreSQL database service
   postgres:
-    container_name: navigate_la_postgres
-    image: postgres:13
+    container_name: navigate_la_postgres  # Name of the main Postgres container
+    image: postgres:13  # Postgres version 13
     environment:
-      POSTGRES_USER: la28_user
-      POSTGRES_PASSWORD: bigdata_la28
-      POSTGRES_DB: navigate_la28_db
+      POSTGRES_USER: la28_user  # Database username
+      POSTGRES_PASSWORD: bigdata_la28  # Database password
+      POSTGRES_DB: navigate_la28_db  # Database name
     ports:
-      - "5433:5432"
+      - "5433:5432"  # Map the default Postgres port to a custom port
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data  # Persist Postgres data
     networks:
-      - navigate_la_28
+      - navigate_la_28  # Attach to the navigate_la_28 network
 
+  # Test PostgreSQL database service
   postgres_test:
-    container_name: navigate_la_postgres_test
-    image: postgres:13
+    container_name: navigate_la_postgres_test  # Name of the test Postgres container
+    image: postgres:13  # Postgres version 13
     environment:
-      POSTGRES_USER: la28_user
-      POSTGRES_PASSWORD: bigdata_la28
-      POSTGRES_DB: navigate_la28_test_db
+      POSTGRES_USER: la28_user  # Database username for testing
+      POSTGRES_PASSWORD: bigdata_la28  # Database password for testing
+      POSTGRES_DB: navigate_la28_test_db  # Test database name
     ports:
-      - "5434:5432"
+      - "5434:5432"  # Map the test Postgres port
     volumes:
-      - postgres_test_data:/var/lib/postgresql/data
+      - postgres_test_data:/var/lib/postgresql/data  # Persist test Postgres data
     networks:
-      - navigate_la_28
+      - navigate_la_28  # Attach to the navigate_la_28 network
 
+  # Hadoop DataNode service for HDFS
   datanode:
-    container_name: hadoop_datanode
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop_datanode  # Name of the Hadoop DataNode container
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8  # Hadoop DataNode image
     environment:
-      - CORE_CONF_fs_defaultFS=hdfs://hadoop:9000
+      - CORE_CONF_fs_defaultFS=hdfs://hadoop:9000  # HDFS configuration
     ports:
-      - "9864:9864"
+      - "9864:9864"  # Web UI port for the DataNode
     volumes:
-      - hadoop_datanode:/hadoop/dfs/data
-      - ./hadoop/conf:/opt/hadoop-3.2.1/etc/hadoop
+      - hadoop_datanode:/hadoop/dfs/data  # Persist DataNode data
+      - ./hadoop/conf:/opt/hadoop-3.2.1/etc/hadoop  # Mount custom Hadoop configuration
     networks:
-      - navigate_la_28
+      - navigate_la_28  # Attach to the navigate_la_28 network
     depends_on:
-      - hadoop
+      - hadoop  # Ensure the NameNode is running
 
+# Define persistent volumes for data storage
 volumes:
-  hadoop_namenode:
-  postgres_data:
-  postgres_test_data:
-  hadoop_datanode:
+  hadoop_namenode:  # Volume for Hadoop NameNode
+  postgres_data:  # Volume for main Postgres
+  postgres_test_data:  # Volume for test Postgres
+  hadoop_datanode:  # Volume for Hadoop DataNode
 
+# Define the network for container communication
 networks:
   navigate_la_28:

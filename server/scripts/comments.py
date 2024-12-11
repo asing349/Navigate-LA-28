@@ -1,3 +1,5 @@
+# server/scripts/comments.py
+
 # Comprehensive list of comments for reviews
 comments = [
     # Positive comments
