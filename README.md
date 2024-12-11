@@ -17,7 +17,6 @@
 
 - [Navigate-LA-28 Project](#navigate-la-28-project)
   - [Group Members](#group-members)
-  - [| Samara Miramontes| smira009@ucr.edu        | 862059976   |](#-samara-miramontes-smira009ucredu---------862059976---)
   - [Table of Contents](#table-of-contents)
   - [Project Title and Overview](#project-title-and-overview)
   - [Author Contributions](#author-contributions)
@@ -288,5 +287,12 @@ By following the steps outlined in this documentation, developers and testers ca
 If you encounter any issues or have any suggestions for improvement, feel free to raise an issue or contribute to the repository. Thank you for exploring **Navigate-LA-28**!
 
 ---
+
+## Dataset
+
+The datasets used in this project can be accessed via the following link:
+
+[Dataset Link](https://drive.google.com/drive/folders/1BCLp1u8kVle-SiRG17NXvydOA685ZgVb?usp=sharing)
+
 
 We appreciate your time and interest in our project!
