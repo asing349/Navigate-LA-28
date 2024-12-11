@@ -5,6 +5,8 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import and_, func
 from math import radians, sin, cos, sqrt, atan2
+from datetime import datetime, timedelta
+import random
 
 from models.review import Review as ReviewModel
 from schemas.review import ReviewCreate, ReviewUpdate
@@ -141,3 +143,75 @@ async def direct_bus_routes(
     except Exception as e:
         print(str(e))
         raise
+
+
+async def create_attraction_visit_plan(
+    db: AsyncSession,
+    lat: float,
+    long: float,
+    max_places: int = 5,
+    visit_duration_hours: float | None = None,
+) -> Dict[str, Any]:
+    """
+    Creates a plan to visit nearby attractions.
+
+    Args:
+        db: Database session
+        lat: Starting latitude
+        long: Starting longitude
+        max_places: Maximum number of places to include in plan
+        visit_duration_hours: Optional total duration of the visit in hours.
+                            If None, duration will be calculated based on number of places.
+
+    Returns:
+        Dictionary containing the visit plan with suggested order and timing
+    """
+    # Get nearby places
+    places = await nearest_places(db, lat, long)
+
+    if not places:
+        return {"message": "No attractions found nearby"}
+
+    # Limit number of places
+    places = places[:max_places]
+
+    # If no duration specified, calculate based on number of places
+    # Assuming average 1-2 hours per attraction
+    if visit_duration_hours is None:
+        visit_duration_hours = len(places) * random.uniform(1.0, 2.0)
+
+    # Generate random weights for each place
+    weights = [random.uniform(0.5, 1.5) for _ in places]
+    total_weights = sum(weights)
+
+    # Normalize weights to match total duration
+    visit_times = [w * visit_duration_hours / total_weights for w in weights]
+
+    # Create itinerary
+    current_time = datetime.now().replace(hour=9, minute=0)  # Start at 9 AM
+    itinerary = []
+
+    for place, duration in zip(places, visit_times):
+        visit = {
+            "place": {
+                "name": place.name,
+                "address": place.address,
+                "description": place.description,
+                "distance_from_start": place.distance,
+                "latitude": place.latitude,
+                "longitude": place.longitude,
+            },
+            "start_time": current_time.strftime("%I:%M %p"),
+            "end_time": (current_time + timedelta(hours=duration)).strftime("%I:%M %p"),
+            "suggested_duration": f"{duration:.1f} hours",
+        }
+
+        itinerary.append(visit)
+        current_time += timedelta(hours=duration)
+
+    return {
+        "total_attractions": len(places),
+        "total_duration": f"{visit_duration_hours} hours",
+        "start_location": {"latitude": lat, "longitude": long},
+        "itinerary": itinerary,
+    }

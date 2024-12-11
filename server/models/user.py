@@ -1,7 +1,5 @@
 # server/models/user.py
 from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint
-from sqlalchemy.orm import relationship
-
 from models.base import Base
 
 
@@ -23,13 +21,5 @@ class User(Base):
     # Country field
     country = Column(String, nullable=True)
 
-    # Relationships
-    usages = relationship(
-        "CustomerUsage", back_populates="user", cascade="all, delete-orphan")
-    reviews = relationship("Review", back_populates="user",
-                           cascade="all, delete-orphan")
-
     # Unique constraint for additional validation
-    __table_args__ = (
-        UniqueConstraint("username", name="unique_username_constraint"),
-    )
+    __table_args__ = (UniqueConstraint("username", name="unique_username_constraint"),)
