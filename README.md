@@ -1,23 +1,23 @@
 # Navigate-LA-28 Project
 
-**Group Name:** Navigate-LA-28  
-**Group Number:** 4  
+**Group Name:** TL;DR 
+**Group Number:** 25  
 
 ## Group Members
 
 | Name            | Email                       | Student ID  |
 |------------------|-----------------------------|-------------|
-| Aditya Gambhir   | agambhir001@ucr.edu        | 123456789   |
-| Faizaan Muzawar  | member2@example.com        | 987654321   |
-| Ajit Singh       | member3@example.com        | 456789123   |
-| Samara Miramontes| member3@example.com        | 456789123   |
+| Aditya Gambhir   | agamb031@ucr.edu        | 862466997   |
+| Faizaan Muzawar  | mmuza004@ucr.edu        | 862467277   |
+| Ajit Singh       | asing349@ucr.edu       | 862465889   |
+| Samara Miramontes| smira009@ucr.edu        | 862059976   |
 ---
 
 ## Table of Contents
 
 - [Navigate-LA-28 Project](#navigate-la-28-project)
   - [Group Members](#group-members)
-  - [| Samara Miramontes| member3@example.com        | 456789123   |](#-samara-miramontes-member3examplecom---------456789123---)
+  - [| Samara Miramontes| smira009@ucr.edu        | 862059976   |](#-samara-miramontes-smira009ucredu---------862059976---)
   - [Table of Contents](#table-of-contents)
   - [Project Title and Overview](#project-title-and-overview)
   - [Author Contributions](#author-contributions)
@@ -47,9 +47,10 @@
 
 | Group Member      | Contribution                                                                 |
 |-------------------|-----------------------------------------------------------------------------|
-| Aditya Gambhir    | Set up the backend (FastAPI), implemented database schema, created endpoints. |
-| Member 2 Name     | Developed the frontend using React, integrated Redux for state management.  |
-| Member 3 Name     | Configured Docker, implemented Hadoop and Spark integration.               |
+| Aditya Gambhir    | Focused on getting queries to work and providing information for the report. |
+| Faizaan Muzawar    | Focused on integrating the queries with the backend and building the UI for all the functions  |
+| Ajit Singh     | Focused on writing queries, making flow diagrams and initial ideation and also solving dependencies issues for some tasks.              |
+| Samara Miramontes     | Focused on writing reports, helping with queries, and other general tasks.            |
 
 ---
 
