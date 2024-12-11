@@ -13,19 +13,15 @@ from models.place import Place
 # Initialize relationships after all models are defined
 def init_models():
     User.usages = relationship(
-        "CustomerUsage",
-        back_populates="user",
-        cascade="all, delete-orphan",
-        lazy="dynamic",
+        "CustomerUsage", back_populates="user", cascade="all, delete-orphan"
     )
     User.reviews = relationship(
-        "Review", back_populates="user", cascade="all, delete-orphan", lazy="dynamic"
+        "Review", back_populates="user", cascade="all, delete-orphan"
     )
     User.bus_route_usages = relationship(
         "BusRouteUsage",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="dynamic",
     )
 
 
