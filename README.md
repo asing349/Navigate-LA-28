@@ -289,15 +289,4 @@ If you encounter any issues or have any suggestions for improvement, feel free t
 
 ---
 
-## Contact Information
-
-For any queries or support, feel free to contact the group members:
-
-| Name                | Email                       |
-|---------------------|-----------------------------|
-| Aditya Gambhir      | agambhir001@ucr.edu        |
-| Faizaan Muzawar     | member2@example.com        |
-| Ajit Singh          | member3@example.com        |
-| Samara Miramontes   | member4@example.com        |
-
 We appreciate your time and interest in our project!
